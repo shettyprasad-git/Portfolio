@@ -6,15 +6,44 @@ const fallbackLibrary = {
   email: (input) =>
     `Subject: Request Regarding ${input.slice(0, 48) || "the Opportunity"}\n\nDear Sir/Madam,\n\nI hope you are doing well. I am writing to request your support regarding ${input || "the matter discussed"}. I would appreciate the opportunity to share the required details and proceed professionally.\n\nThank you for your time and consideration.\n\nBest regards,\nYour Name`,
   workflow: (input) =>
-    `Suggested workflow:\n\nToday:\n- List all commitments related to: ${input || "your goal"}.\n- Pick the top 3 urgent tasks.\n- Block 90 minutes for deep work.\n\nThis week:\n- Complete the highest-impact deliverable first.\n- Use short review sessions every evening.\n- Keep one buffer slot for unexpected work.\n\nProductivity tip:\nProtect your first work session from notifications.`
+    `Suggested workflow:\n\nToday:\n- List all commitments related to: ${input || "your goal"}.\n- Pick the top 3 urgent tasks.\n- Block 90 minutes for deep work.\n\nThis week:\n- Complete the highest-impact deliverable first.\n- Use short review sessions every evening.\n- Keep one buffer slot for unexpected work.\n\nProductivity tip:\nProtect your first work session from notifications.`,
+  planner: (input) =>
+    `Daily Planner:\n\nFocus Block (Morning):\n- Tackle your highest priority task related to: ${input.slice(0, 50) || "Main Goal"}\n\nMidday (Active Hours):\n- Handle emails and secondary tasks.\n- Take a 15-minute screen-free break.\n\nWrap-up (Evening):\n- Review deadlines and prepare for tomorrow.`
 };
 
-function buildPrompt(feature, input) {
+const MODELS = {
+  "Zephyr": "HuggingFaceH4/zephyr-7b-beta",
+  "Mistral": "mistralai/Mistral-7B-Instruct-v0.3",
+  "Llama": "meta-llama/Meta-Llama-3-8B-Instruct",
+  "Gemma": "google/gemma-7b-it",
+  "Qwen": "Qwen/Qwen2.5-72B-Instruct"
+};
+
+const ROUTER_DEFAULTS = {
+  chat: "Zephyr",
+  summarize: "Mistral",
+  workflow: "Qwen",
+  email: "Gemma",
+  planner: "Llama"
+};
+
+function buildPrompt(feature, input, preferences) {
+  const { goals, workStyle, tone, focusArea, activeHours } = preferences || {};
+  
+  const persona = `You are FlowPilot AI, a productivity assistant.
+User Profile:
+- Goals: ${goals || "General productivity"}
+- Work Style: ${workStyle || "Focused"}
+- Tone: ${tone || "Professional"}
+- Focus Area: ${focusArea || "General"}
+- Active Hours: ${activeHours || "Standard"}`;
+
   const system = {
-    chat: "You are FlowPilot AI, a concise productivity assistant.",
-    summarize: "Summarize the content into a summary, key points, action items, and flashcard ideas.",
-    email: "Generate a clear professional email for the user's requirement.",
-    workflow: "Create a practical workflow plan with schedule, task breakdown, and productivity improvements."
+    chat: `${persona}\nProvide a concise, helpful response.`,
+    summarize: `${persona}\nSummarize the content into a summary, key points, action items, and flashcard ideas.`,
+    email: `${persona}\nGenerate a clear professional email for the user's requirement matching their preferred tone.`,
+    workflow: `${persona}\nCreate a practical workflow plan with schedule, task breakdown, and productivity improvements.`,
+    planner: `${persona}\nGenerate a daily schedule with focus blocks, priorities, and break planning based on the user's active hours and deadlines.`
   };
 
   return `${system[feature]}\n\nUser input:\n${input}\n\nResponse:`;
@@ -28,7 +57,7 @@ function parseHuggingFaceResponse(data) {
   return JSON.stringify(data);
 }
 
-export async function generateAI(feature, input) {
+export async function generateAI(feature, input, modelPreference = "Auto", userPreferences = {}) {
   const cleanInput = String(input || "").trim();
   const fallback = fallbackLibrary[feature] || fallbackLibrary.chat;
 
@@ -40,15 +69,17 @@ export async function generateAI(feature, input) {
   const timeout = setTimeout(() => controller.abort(), 18000);
 
   try {
-    const model = process.env.HF_MODEL || "HuggingFaceH4/zephyr-7b-beta";
-    const response = await fetch(`https://api-inference.huggingface.co/models/${model}`, {
+    let selectedModel = modelPreference === "Auto" ? ROUTER_DEFAULTS[feature] : modelPreference;
+    const modelEndpoint = MODELS[selectedModel] || MODELS["Zephyr"];
+
+    const response = await fetch(`https://api-inference.huggingface.co/models/${modelEndpoint}`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${process.env.HF_API_TOKEN}`,
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        inputs: buildPrompt(feature, cleanInput),
+        inputs: buildPrompt(feature, cleanInput, userPreferences),
         parameters: {
           max_new_tokens: 420,
           temperature: 0.65,
@@ -61,7 +92,13 @@ export async function generateAI(feature, input) {
     const data = await response.json();
     if (!response.ok) throw new Error(data?.error || "Hugging Face request failed");
 
-    return { text: parseHuggingFaceResponse(data).trim(), provider: "huggingface" };
+    let outputText = parseHuggingFaceResponse(data).trim();
+    const promptPrefix = "Response:";
+    if (outputText.includes(promptPrefix)) {
+      outputText = outputText.split(promptPrefix).pop().trim();
+    }
+
+    return { text: outputText, provider: `huggingface (${selectedModel})` };
   } catch (error) {
     console.error("Hugging Face API Error:", error.message);
     return {

@@ -22,7 +22,9 @@ import {
   LayoutDashboard,
   Target,
   FileText,
-  Workflow
+  Workflow,
+  Calendar,
+  Settings as SettingsIcon
 } from "lucide-react";
 import { apiRequest } from "./lib/api.js";
 
@@ -32,7 +34,9 @@ const views = [
   { id: "tasks", label: "Task Board", icon: ClipboardList },
   { id: "notes", label: "Smart Notes", icon: NotebookText },
   { id: "email", label: "Email Writer", icon: Mail },
-  { id: "workflow", label: "Workflow", icon: Workflow }
+  { id: "workflow", label: "Workflow", icon: Workflow },
+  { id: "planner", label: "Daily Planner", icon: Calendar },
+  { id: "settings", label: "Settings", icon: SettingsIcon }
 ];
 
 const starterTasks = [
@@ -288,7 +292,7 @@ function ProgressRing({ radius, stroke, progress }) {
   );
 }
 
-function Shell({ user, onLogout }) {
+function Shell({ user, onLogout, onUpdateUser }) {
   const [view, setView] = useState("dashboard");
   const [tasks, setTasks] = useState([]);
   const [notes, setNotes] = useState([]);
@@ -398,6 +402,8 @@ function Shell({ user, onLogout }) {
             {view === "notes" && <Notes notes={notes} setNotes={setNotes} loading={loading} />}
             {view === "email" && <AIComposer feature="email" title="AI Email Generator" placeholder="Example: Write an internship application email for a frontend role..." suggestions={aiSuggestions.email} />}
             {view === "workflow" && <AIComposer feature="workflow" title="AI Workflow Suggestions" placeholder="Example: I am preparing for exams and internship applications..." suggestions={aiSuggestions.workflow} />}
+            {view === "planner" && <Planner />}
+            {view === "settings" && <Settings user={user} onUpdateUser={onUpdateUser} />}
           </div>
         </section>
       </div>
@@ -754,6 +760,7 @@ function AIComposer({ feature, title, placeholder, suggestions }) {
   const [prompt, setPrompt] = useState("");
   const [result, setResult] = useState("");
   const [provider, setProvider] = useState("");
+  const [model, setModel] = useState("Auto");
   const [isGenerating, setIsGenerating] = useState(false);
 
   async function submit(event, presetPrompt) {
@@ -765,12 +772,12 @@ function AIComposer({ feature, title, placeholder, suggestions }) {
     
     setIsGenerating(true);
     setResult("");
-    const toastId = toast.loading("AI is generating response...");
+    const toastId = toast.loading(`AI (${model}) is generating response...`);
     
     try {
       const data = await apiRequest(`/ai/${feature}`, {
         method: "POST",
-        body: JSON.stringify({ prompt: finalPrompt })
+        body: JSON.stringify({ prompt: finalPrompt, model })
       });
       setResult(data.response || data.summary || "");
       setProvider(data.provider);
@@ -789,6 +796,16 @@ function AIComposer({ feature, title, placeholder, suggestions }) {
         <div className="flex flex-col gap-4">
           <Panel title="Command prompt">
             <form onSubmit={submit} className="grid gap-4">
+              <div className="flex items-center justify-between">
+                <label className="text-sm font-medium text-slate-300 flex items-center gap-2">
+                  <Bot size={16} className="text-cyan-400" /> Model:
+                </label>
+                <select value={model} onChange={(e) => setModel(e.target.value)} className="bg-black/40 border border-white/10 rounded-lg px-3 py-1.5 text-sm outline-none focus:border-cyan-500/50">
+                  {["Auto", "Zephyr", "Mistral", "Llama", "Gemma", "Qwen"].map(m => (
+                    <option key={m} value={m}>{m === "Auto" ? "Auto (Best for task)" : m}</option>
+                  ))}
+                </select>
+              </div>
               <textarea 
                 className="w-full resize-y bg-black/20 text-base" 
                 rows={8} 
@@ -867,12 +884,143 @@ function EmptyState({ text, icon: Icon = Inbox }) {
   );
 }
 
+function Settings({ user, onUpdateUser }) {
+  const [loading, setLoading] = useState(false);
+  const [preferences, setPreferences] = useState(user.preferences || {
+    goals: "", workStyle: "Focused", tone: "Professional", focusArea: "General", activeHours: "9 AM - 5 PM"
+  });
+
+  async function savePreferences(e) {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const updatedUser = await apiRequest("/auth/preferences", { method: "PUT", body: JSON.stringify(preferences) });
+      onUpdateUser(updatedUser);
+      toast.success("Preferences saved securely.");
+    } catch (err) {
+      toast.error(err.message);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+      <Header eyebrow="Personalization" title="AI Settings & Profile" />
+      <Panel title="How AI should interact with you" icon={<SettingsIcon size={18} className="text-cyan-400" />}>
+        <form onSubmit={savePreferences} className="grid gap-6 sm:grid-cols-2">
+          <label className="field-label col-span-full">
+            Productivity Goals
+            <input value={preferences.goals} onChange={(e) => setPreferences({...preferences, goals: e.target.value})} placeholder="e.g. Master React, Finish hackathon, Write thesis..." className="mt-1 bg-black/20" />
+          </label>
+          <label className="field-label">
+            Preferred Work Style
+            <select value={preferences.workStyle} onChange={(e) => setPreferences({...preferences, workStyle: e.target.value})} className="mt-1 bg-black/20">
+              <option>Focused (Pomodoro)</option>
+              <option>Flexible</option>
+              <option>Deep Work (Long blocks)</option>
+              <option>Collaborative</option>
+            </select>
+          </label>
+          <label className="field-label">
+            AI Response Tone
+            <select value={preferences.tone} onChange={(e) => setPreferences({...preferences, tone: e.target.value})} className="mt-1 bg-black/20">
+              <option>Professional</option>
+              <option>Casual & Friendly</option>
+              <option>Strict & Direct</option>
+              <option>Pirate (Fun)</option>
+            </select>
+          </label>
+          <label className="field-label">
+            Primary Focus Area
+            <select value={preferences.focusArea} onChange={(e) => setPreferences({...preferences, focusArea: e.target.value})} className="mt-1 bg-black/20">
+              <option>General</option>
+              <option>Engineering / Coding</option>
+              <option>Design</option>
+              <option>Academics</option>
+              <option>Business</option>
+            </select>
+          </label>
+          <label className="field-label">
+            Active Hours
+            <input value={preferences.activeHours} onChange={(e) => setPreferences({...preferences, activeHours: e.target.value})} placeholder="e.g. 9 AM - 5 PM" className="mt-1 bg-black/20" />
+          </label>
+          <button className="primary-button col-span-full mt-2" disabled={loading}>{loading ? "Saving..." : "Save Preferences"}</button>
+        </form>
+      </Panel>
+    </motion.div>
+  );
+}
+
+function Planner() {
+  const [form, setForm] = useState({ deadline: "End of week", goal: "Complete the landing page frontend" });
+  const [result, setResult] = useState("");
+  const [provider, setProvider] = useState("");
+  const [isGenerating, setIsGenerating] = useState(false);
+
+  async function generate(e) {
+    e.preventDefault();
+    if (!form.goal.trim()) return;
+    setIsGenerating(true);
+    setResult("");
+    
+    try {
+      const data = await apiRequest("/ai/planner", {
+        method: "POST",
+        body: JSON.stringify({ prompt: `Goal: ${form.goal}\nDeadline: ${form.deadline}` })
+      });
+      setResult(data.response);
+      setProvider(data.provider);
+      toast.success("Schedule generated!");
+    } catch (err) {
+      toast.error(err.message);
+    } finally {
+      setIsGenerating(false);
+    }
+  }
+
+  return (
+    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+      <Header eyebrow="Time Management" title="AI Daily Planner" />
+      <div className="grid gap-8 lg:grid-cols-[1fr_1.2fr]">
+        <Panel title="Plan Parameters">
+          <form onSubmit={generate} className="grid gap-5">
+            <label className="field-label">
+              What is your main goal today?
+              <input required value={form.goal} onChange={(e) => setForm({...form, goal: e.target.value})} className="mt-1 bg-black/20" />
+            </label>
+            <label className="field-label">
+              Key Deadlines
+              <input required value={form.deadline} onChange={(e) => setForm({...form, deadline: e.target.value})} className="mt-1 bg-black/20" />
+            </label>
+            <button className="primary-button w-full shadow-[0_0_15px_rgba(103,232,249,0.2)]" disabled={isGenerating}>
+              {isGenerating ? <><Bot className="mr-2 animate-pulse" size={18} /> Routing to best AI...</> : <><Calendar className="mr-2" size={18} /> Generate Schedule</>}
+            </button>
+          </form>
+        </Panel>
+
+        <Panel title={provider ? `Your AI Schedule (${provider})` : "Your Schedule"} className="relative min-h-[400px]">
+          {result ? (
+            <div className="prose prose-invert max-w-none">
+              <p className="whitespace-pre-wrap text-[15px] leading-relaxed text-slate-200">{result}</p>
+            </div>
+          ) : (
+             <div className="absolute inset-0 grid place-items-center p-6">
+                <EmptyState icon={Calendar} text="Enter your daily goals and let AI carve out your perfect schedule based on your preferences." />
+             </div>
+          )}
+        </Panel>
+      </div>
+    </motion.div>
+  );
+}
+
 export default function App() {
   const { auth, save, logout } = useAuth();
   return (
     <>
       <Toaster position="bottom-right" theme="dark" toastOptions={{ style: { background: '#0a0d1a', border: '1px solid rgba(255,255,255,0.1)' } }} />
-      {auth ? <Shell user={auth.user} onLogout={logout} /> : <LandingPage onAuth={save} />}
+      {auth ? <Shell user={auth.user} onLogout={logout} onUpdateUser={(u) => save({ token: auth.token, user: u })} /> : <LandingPage onAuth={save} />}
     </>
   );
 }

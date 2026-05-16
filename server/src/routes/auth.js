@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 import User from "../models/User.js";
 import { createId, memoryStore, publicUser } from "../lib/memoryStore.js";
 import { createToken } from "../lib/token.js";
+import { requireAuth } from "../middleware/auth.js";
 
 const router = express.Router();
 
@@ -51,6 +52,43 @@ router.post("/login", async (req, res, next) => {
     if (!valid) return res.status(401).json({ message: "Invalid credentials" });
 
     res.json({ token: createToken(user), user: publicUser(user) });
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.get("/me", requireAuth, async (req, res, next) => {
+  try {
+    const user = req.app.locals.useMemory
+      ? memoryStore.users.find((u) => u.id === req.userId)
+      : await User.findById(req.userId);
+      
+    if (!user) return res.status(404).json({ message: "User not found" });
+    res.json(publicUser(user));
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.put("/preferences", requireAuth, async (req, res, next) => {
+  try {
+    const preferences = req.body;
+    
+    if (req.app.locals.useMemory) {
+      const user = memoryStore.users.find((u) => u.id === req.userId);
+      if (!user) return res.status(404).json({ message: "User not found" });
+      user.preferences = { ...user.preferences, ...preferences };
+      return res.json(publicUser(user));
+    }
+    
+    const user = await User.findByIdAndUpdate(
+      req.userId,
+      { $set: { preferences } },
+      { new: true, runValidators: true }
+    );
+    if (!user) return res.status(404).json({ message: "User not found" });
+    
+    res.json(publicUser(user));
   } catch (error) {
     next(error);
   }
