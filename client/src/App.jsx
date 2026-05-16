@@ -787,11 +787,11 @@ function AIComposer({ feature, title, placeholder, suggestions }) {
       <Header eyebrow="AI workspace" title={title} />
       <div className="grid gap-8 lg:grid-cols-[1fr_1.2fr]">
         <div className="flex flex-col gap-4">
-          <Panel title="Command prompt" className="flex-1">
-            <form onSubmit={submit} className="flex h-full flex-col gap-4">
+          <Panel title="Command prompt">
+            <form onSubmit={submit} className="grid gap-4">
               <textarea 
-                className="flex-1 resize-none bg-black/20 text-base" 
-                rows={12} 
+                className="w-full resize-y bg-black/20 text-base" 
+                rows={8} 
                 value={prompt} 
                 onChange={(e) => setPrompt(e.target.value)} 
                 placeholder={placeholder} 

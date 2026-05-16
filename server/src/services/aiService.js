@@ -63,8 +63,9 @@ export async function generateAI(feature, input) {
 
     return { text: parseHuggingFaceResponse(data).trim(), provider: "huggingface" };
   } catch (error) {
+    console.error("Hugging Face API Error:", error.message);
     return {
-      text: `${fallback(cleanInput)}\n\nFallback reason: ${error.message}`,
+      text: fallback(cleanInput),
       provider: "fallback"
     };
   } finally {
