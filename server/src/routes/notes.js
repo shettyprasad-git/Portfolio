@@ -53,4 +53,21 @@ router.post("/", async (req, res, next) => {
   }
 });
 
+router.delete("/:id", async (req, res, next) => {
+  try {
+    if (req.app.locals.useMemory) {
+      const index = memoryStore.notes.findIndex((item) => item.id === req.params.id && item.userId === req.userId);
+      if (index === -1) return res.status(404).json({ message: "Note not found" });
+      memoryStore.notes.splice(index, 1);
+      return res.status(204).end();
+    }
+
+    const note = await Note.findOneAndDelete({ _id: req.params.id, userId: req.userId });
+    if (!note) return res.status(404).json({ message: "Note not found" });
+    res.status(204).end();
+  } catch (error) {
+    next(error);
+  }
+});
+
 export default router;

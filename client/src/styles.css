@@ -79,7 +79,8 @@ textarea:focus {
 .secondary-button,
 .nav-button,
 .action-tile,
-.mini-button {
+.mini-button,
+.icon-button {
   border-radius: 8px;
   transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
 }
@@ -104,11 +105,22 @@ textarea:focus {
   padding: 0.65rem 0.8rem;
 }
 
+.icon-button {
+  display: inline-grid;
+  min-height: 32px;
+  min-width: 32px;
+  place-items: center;
+  border: 1px solid rgba(248, 113, 113, 0.22);
+  background: rgba(248, 113, 113, 0.08);
+  color: #fecaca;
+}
+
 .primary-button:hover,
 .secondary-button:hover,
 .nav-button:hover,
 .action-tile:hover,
-.mini-button:hover {
+.mini-button:hover,
+.icon-button:hover {
   transform: translateY(-1px);
 }
 

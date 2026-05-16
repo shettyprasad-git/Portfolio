@@ -6,13 +6,14 @@ import {
   CheckCircle2,
   ClipboardList,
   Clock3,
+  ListChecks,
   LogOut,
   Mail,
   NotebookText,
   PanelLeft,
   Rocket,
   Sparkles,
-  TimerReset,
+  Trash2,
   Wand2
 } from "lucide-react";
 import { apiRequest } from "./lib/api.js";
@@ -36,7 +37,13 @@ function useAuth() {
   const [auth, setAuth] = useState(() => {
     const token = localStorage.getItem("flowpilot_token");
     const user = localStorage.getItem("flowpilot_user");
-    return token && user ? { token, user: JSON.parse(user) } : null;
+    try {
+      return token && user ? { token, user: JSON.parse(user) } : null;
+    } catch (_error) {
+      localStorage.removeItem("flowpilot_token");
+      localStorage.removeItem("flowpilot_user");
+      return null;
+    }
   });
 
   function save(data) {
@@ -145,13 +152,17 @@ function Shell({ user, onLogout }) {
   const [tasks, setTasks] = useState([]);
   const [notes, setNotes] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   async function refresh() {
     setLoading(true);
+    setError("");
     try {
       const [taskData, noteData] = await Promise.all([apiRequest("/tasks"), apiRequest("/notes")]);
       setTasks(taskData);
       setNotes(noteData);
+    } catch (err) {
+      setError(err.message);
     } finally {
       setLoading(false);
     }
@@ -204,6 +215,7 @@ function Shell({ user, onLogout }) {
         </aside>
 
         <section className="p-4 sm:p-6 lg:p-8">
+          {error && <ErrorBanner message={error} onDismiss={() => setError("")} />}
           {view === "dashboard" && <Dashboard stats={stats} tasks={tasks} notes={notes} loading={loading} setView={setView} />}
           {view === "assistant" && <AIComposer feature="chat" title="AI Workspace Assistant" placeholder="Ask FlowPilot to plan, summarize, prioritize, or brainstorm..." />}
           {view === "tasks" && <Tasks tasks={tasks} setTasks={setTasks} />}
@@ -226,7 +238,7 @@ function Dashboard({ stats, tasks, notes, loading, setView }) {
 
   return (
     <div>
-      <Header eyebrow="Command center" title="Today’s workflow cockpit" />
+      <Header eyebrow="Command center" title="Today's workflow cockpit" />
       <div className="grid gap-4 md:grid-cols-4">
         {cards.map((card) => {
           const Icon = card.icon;
@@ -281,34 +293,61 @@ function Dashboard({ stats, tasks, notes, loading, setView }) {
 
 function Tasks({ tasks, setTasks }) {
   const [form, setForm] = useState({ title: "", description: "", priority: "Medium", status: "Pending", category: "General", estimateMinutes: 45 });
+  const [error, setError] = useState("");
   const columns = ["Pending", "In Progress", "Completed"];
 
   async function addTask(event) {
     event.preventDefault();
     if (!form.title.trim()) return;
-    const task = await apiRequest("/tasks", { method: "POST", body: JSON.stringify(form) });
-    setTasks([task, ...tasks]);
-    setForm({ ...form, title: "", description: "" });
+    setError("");
+    try {
+      const task = await apiRequest("/tasks", { method: "POST", body: JSON.stringify(form) });
+      setTasks([task, ...tasks]);
+      setForm({ ...form, title: "", description: "" });
+    } catch (err) {
+      setError(err.message);
+    }
   }
 
   async function updateTask(id, patch) {
-    const updated = await apiRequest(`/tasks/${id}`, { method: "PATCH", body: JSON.stringify(patch) });
-    setTasks(tasks.map((task) => (task.id === id ? updated : task)));
+    setError("");
+    try {
+      const updated = await apiRequest(`/tasks/${id}`, { method: "PATCH", body: JSON.stringify(patch) });
+      setTasks(tasks.map((task) => (task.id === id ? updated : task)));
+    } catch (err) {
+      setError(err.message);
+    }
+  }
+
+  async function deleteTask(id) {
+    setError("");
+    try {
+      await apiRequest(`/tasks/${id}`, { method: "DELETE" });
+      setTasks(tasks.filter((task) => task.id !== id));
+    } catch (err) {
+      setError(err.message);
+    }
   }
 
   async function addStarterTasks() {
-    const created = [];
-    for (const task of starterTasks) {
-      created.push(await apiRequest("/tasks", { method: "POST", body: JSON.stringify(task) }));
+    setError("");
+    try {
+      const created = [];
+      for (const task of starterTasks) {
+        created.push(await apiRequest("/tasks", { method: "POST", body: JSON.stringify(task) }));
+      }
+      setTasks([...created, ...tasks]);
+    } catch (err) {
+      setError(err.message);
     }
-    setTasks([...created, ...tasks]);
   }
 
   return (
     <div>
       <Header eyebrow="Task automation" title="Smart task board" />
+      {error && <ErrorBanner message={error} onDismiss={() => setError("")} />}
       <Panel title="Create task">
-        <form onSubmit={addTask} className="grid gap-3 lg:grid-cols-[1.3fr_1fr_160px_160px_120px]">
+        <form onSubmit={addTask} className="grid gap-3 lg:grid-cols-[1.2fr_1fr_150px_150px_120px_120px]">
           <input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="Task title" />
           <input value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="Description" />
           <select value={form.priority} onChange={(e) => setForm({ ...form, priority: e.target.value })}>
@@ -317,6 +356,7 @@ function Tasks({ tasks, setTasks }) {
             <option>High</option>
           </select>
           <input value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} placeholder="Category" />
+          <input type="number" min="5" step="5" value={form.estimateMinutes} onChange={(e) => setForm({ ...form, estimateMinutes: e.target.value })} aria-label="Estimate minutes" />
           <button className="primary-button">Add</button>
         </form>
         {!tasks.length && <button className="secondary-button mt-3" onClick={addStarterTasks}>Add demo tasks</button>}
@@ -327,7 +367,7 @@ function Tasks({ tasks, setTasks }) {
           <Panel key={column} title={column}>
             <div className="grid min-h-64 gap-3">
               {tasks.filter((task) => task.status === column).map((task) => (
-                <TaskCard key={task.id} task={task} onStatus={(status) => updateTask(task.id, { status })} />
+                <TaskCard key={task.id} task={task} onStatus={(status) => updateTask(task.id, { status })} onDelete={() => deleteTask(task.id)} />
               ))}
             </div>
           </Panel>
@@ -337,12 +377,19 @@ function Tasks({ tasks, setTasks }) {
   );
 }
 
-function TaskCard({ task, onStatus, compact }) {
+function TaskCard({ task, onStatus, onDelete, compact }) {
   return (
     <div className="rounded-lg border border-white/10 bg-white/[0.045] p-4">
       <div className="flex items-start justify-between gap-3">
         <p className="font-medium">{task.title}</p>
-        <span className={`pill ${task.priority.toLowerCase()}`}>{task.priority}</span>
+        <div className="flex items-center gap-2">
+          <span className={`pill ${task.priority.toLowerCase()}`}>{task.priority}</span>
+          {!compact && onDelete && (
+            <button className="icon-button" type="button" onClick={onDelete} aria-label={`Delete ${task.title}`}>
+              <Trash2 size={15} />
+            </button>
+          )}
+        </div>
       </div>
       {task.description && <p className="mt-2 text-sm leading-6 text-slate-400">{task.description}</p>}
       <div className="mt-4 flex flex-wrap gap-2 text-xs text-slate-300">
@@ -363,23 +410,38 @@ function TaskCard({ task, onStatus, compact }) {
 function Notes({ notes, setNotes }) {
   const [form, setForm] = useState({ title: "", content: "" });
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   async function submit(event) {
     event.preventDefault();
     if (!form.title.trim() || !form.content.trim()) return;
     setLoading(true);
+    setError("");
     try {
       const note = await apiRequest("/notes", { method: "POST", body: JSON.stringify(form) });
       setNotes([note, ...notes]);
       setForm({ title: "", content: "" });
+    } catch (err) {
+      setError(err.message);
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function deleteNote(id) {
+    setError("");
+    try {
+      await apiRequest(`/notes/${id}`, { method: "DELETE" });
+      setNotes(notes.filter((note) => note.id !== id));
+    } catch (err) {
+      setError(err.message);
     }
   }
 
   return (
     <div>
       <Header eyebrow="Smart notes" title="Summaries, actions, flashcards" />
+      {error && <ErrorBanner message={error} onDismiss={() => setError("")} />}
       <Panel title="Paste notes">
         <form onSubmit={submit} className="grid gap-3">
           <input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="Lecture or meeting title" />
@@ -389,11 +451,59 @@ function Notes({ notes, setNotes }) {
       </Panel>
       <div className="mt-6 grid gap-4 lg:grid-cols-2">
         {notes.map((note) => (
-          <Panel title={note.title} key={note.id}>
-            <p className="whitespace-pre-wrap text-sm leading-6 text-slate-300">{note.summary}</p>
-          </Panel>
+          <NoteCard key={note.id} note={note} onDelete={() => deleteNote(note.id)} />
         ))}
       </div>
+    </div>
+  );
+}
+
+function NoteCard({ note, onDelete }) {
+  return (
+    <Panel
+      title={
+        <span className="flex items-start justify-between gap-3">
+          <span>{note.title}</span>
+          <button className="icon-button" type="button" onClick={onDelete} aria-label={`Delete ${note.title}`}>
+            <Trash2 size={15} />
+          </button>
+        </span>
+      }
+    >
+      <p className="whitespace-pre-wrap text-sm leading-6 text-slate-300">{note.summary}</p>
+      <StructuredList title="Key Points" items={note.keyPoints} />
+      <StructuredList title="Action Items" items={note.actionItems} />
+      {note.flashcards?.length > 0 && (
+        <div className="mt-5">
+          <h3 className="mb-2 flex items-center gap-2 text-sm font-semibold text-cyan-100">
+            <ListChecks size={16} /> Flashcards
+          </h3>
+          <div className="grid gap-2">
+            {note.flashcards.map((card, index) => (
+              <div className="rounded-md border border-white/10 bg-white/[0.04] p-3 text-sm" key={`${card.question}-${index}`}>
+                <p className="font-medium text-slate-100">{card.question}</p>
+                <p className="mt-1 leading-6 text-slate-400">{card.answer}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </Panel>
+  );
+}
+
+function StructuredList({ title, items = [] }) {
+  if (!items.length) return null;
+  return (
+    <div className="mt-5">
+      <h3 className="mb-2 flex items-center gap-2 text-sm font-semibold text-cyan-100">
+        <ListChecks size={16} /> {title}
+      </h3>
+      <ul className="grid gap-2 text-sm text-slate-300">
+        {items.map((item, index) => (
+          <li className="rounded-md bg-white/[0.04] px-3 py-2 leading-6" key={`${item}-${index}`}>{item}</li>
+        ))}
+      </ul>
     </div>
   );
 }
@@ -402,6 +512,7 @@ function AIComposer({ feature, title, placeholder }) {
   const [prompt, setPrompt] = useState("");
   const [result, setResult] = useState("");
   const [provider, setProvider] = useState("");
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
   async function submit(event) {
@@ -409,6 +520,7 @@ function AIComposer({ feature, title, placeholder }) {
     if (!prompt.trim()) return;
     setLoading(true);
     setResult("");
+    setError("");
     try {
       const data = await apiRequest(`/ai/${feature}`, {
         method: "POST",
@@ -416,6 +528,8 @@ function AIComposer({ feature, title, placeholder }) {
       });
       setResult(data.response || data.summary || "");
       setProvider(data.provider);
+    } catch (err) {
+      setError(err.message);
     } finally {
       setLoading(false);
     }
@@ -424,6 +538,7 @@ function AIComposer({ feature, title, placeholder }) {
   return (
     <div>
       <Header eyebrow="AI generated" title={title} />
+      {error && <ErrorBanner message={error} onDismiss={() => setError("")} />}
       <div className="grid gap-6 xl:grid-cols-[0.9fr_1.1fr]">
         <Panel title="Prompt">
           <form onSubmit={submit} className="grid gap-4">
@@ -467,6 +582,15 @@ function EmptyState({ text }) {
   return (
     <div className="grid min-h-32 place-items-center rounded-lg border border-dashed border-white/10 bg-white/[0.03] p-6 text-center text-sm text-slate-400">
       {text}
+    </div>
+  );
+}
+
+function ErrorBanner({ message, onDismiss }) {
+  return (
+    <div className="mb-4 flex items-center justify-between gap-3 rounded-lg border border-red-400/25 bg-red-500/10 px-4 py-3 text-sm text-red-100">
+      <span>{message}</span>
+      <button className="text-red-100/80 hover:text-white" type="button" onClick={onDismiss}>Dismiss</button>
     </div>
   );
 }
