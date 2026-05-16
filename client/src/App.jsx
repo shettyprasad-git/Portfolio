@@ -92,9 +92,23 @@ function LandingPage({ onAuth }) {
         payload = { email: "demo@flowpilot.ai", password: "password123" };
       }
       
-      const data = await apiRequest(endpoint, { method: "POST", body: JSON.stringify(payload) });
-      toast.success(isDemo ? "Logged in as Demo User" : "Welcome to FlowPilot!");
-      onAuth(data);
+      try {
+        const data = await apiRequest(endpoint, { method: "POST", body: JSON.stringify(payload) });
+        toast.success(isDemo ? "Logged in as Demo User" : "Welcome to FlowPilot!");
+        onAuth(data);
+      } catch (err) {
+        if (isDemo && (err.message.toLowerCase().includes("invalid") || err.message.toLowerCase().includes("not found"))) {
+          // If login fails for demo user, register them on the fly
+          const registerData = await apiRequest("/auth/register", { 
+            method: "POST", 
+            body: JSON.stringify({ name: "Demo User", email: "demo@flowpilot.ai", password: "password123" }) 
+          });
+          toast.success("Demo User created & logged in!");
+          onAuth(registerData);
+        } else {
+          throw err;
+        }
+      }
     } catch (err) {
       toast.error(err.message);
     } finally {
