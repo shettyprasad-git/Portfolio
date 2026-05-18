@@ -203,7 +203,7 @@ function LandingPage({ onAuth }) {
               </label>
               <label className="field-label mb-0">
                 Password
-                <input required type="password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} placeholder="••••••••" className="mt-1 bg-black/20 focus:bg-black/40" />
+                <input required type="password" minLength={6} value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} placeholder="••••••••" className="mt-1 bg-black/20 focus:bg-black/40" />
               </label>
             </div>
 
