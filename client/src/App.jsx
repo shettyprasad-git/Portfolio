@@ -1,1026 +1,749 @@
-import { useEffect, useMemo, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Toaster, toast } from "sonner";
 import {
+  Award,
   BarChart3,
-  Bot,
+  BookOpenCheck,
+  BrainCircuit,
+  BriefcaseBusiness,
+  CalendarDays,
   CheckCircle2,
-  ClipboardList,
-  Clock3,
-  ListChecks,
-  LogOut,
-  Mail,
-  NotebookText,
-  PanelLeft,
-  Rocket,
-  Sparkles,
-  Trash2,
-  Wand2,
-  Menu,
-  X,
-  Zap,
-  LayoutDashboard,
-  Target,
+  ChevronRight,
+  Code2,
+  Database,
+  ExternalLink,
   FileText,
-  Workflow,
-  Calendar,
-  Settings as SettingsIcon
+  Github,
+  GraduationCap,
+  Linkedin,
+  Mail,
+  MapPin,
+  Sparkles,
+  Star,
+  TrendingUp
 } from "lucide-react";
-import { apiRequest } from "./lib/api.js";
 
-const views = [
-  { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { id: "assistant", label: "AI Assistant", icon: Bot },
-  { id: "tasks", label: "Task Board", icon: ClipboardList },
-  { id: "notes", label: "Smart Notes", icon: NotebookText },
-  { id: "email", label: "Email Writer", icon: Mail },
-  { id: "workflow", label: "Workflow", icon: Workflow },
-  { id: "planner", label: "Daily Planner", icon: Calendar },
-  { id: "settings", label: "Settings", icon: SettingsIcon }
-];
-
-const starterTasks = [
-  { title: "Prepare hackathon demo script", priority: "High", status: "Pending", category: "Hackathon", estimateMinutes: 60 },
-  { title: "Polish dashboard screens", priority: "Medium", status: "In Progress", category: "Design", estimateMinutes: 90 },
-  { title: "Record walkthrough video", priority: "Medium", status: "Pending", category: "Submission", estimateMinutes: 45 }
-];
-
-const aiSuggestions = {
-  chat: ["Plan my study week", "How do I prioritize tasks?", "Summarize meeting notes"],
-  email: ["Generate internship email", "Write a follow-up email", "Draft a sick leave email"],
-  workflow: ["Create sprint workflow", "Plan my exam prep", "Onboarding checklist"]
+const profile = {
+  name: "Durga Prasad",
+  role: "Data Science & AI-focused CSE Student",
+  location: "Dakshina Kannada, Karnataka",
+  email: "prasadshetty1275@gmail.com",
+  github: "https://github.com/shettyprasad-git",
+  linkedin: "https://www.linkedin.com/in/durgaprasadshetty/",
+  resume: "https://drive.google.com/file/d/1Et00-eYuTWZlKj0F5V26l944Q5hvMQo9/view?usp=drivesdk",
+  avatar: "/profile-avatar.jpg",
+  summary:
+    "Computer Science and Data Science Engineering student building practical machine learning, analytics, and AI-assisted web projects with Python, SQL, Power BI, Tableau, React, and Node.js.",
+  education: [
+    {
+      school: "CMR University, Bangalore",
+      program: "B.Tech in Computer Science and Data Science Engineering",
+      result: "CGPA 8.65/10",
+      period: "Mar 2023 - Present"
+    },
+    {
+      school: "Excel Pre-University College, Mangalore",
+      program: "PUC, Science (PCMC), Karnataka State Board",
+      result: "89.5%",
+      period: "Completed 2023"
+    }
+  ]
 };
 
-function useAuth() {
-  const [auth, setAuth] = useState(() => {
-    const token = localStorage.getItem("flowpilot_token");
-    const user = localStorage.getItem("flowpilot_user");
-    try {
-      return token && user ? { token, user: JSON.parse(user) } : null;
-    } catch (_error) {
-      localStorage.removeItem("flowpilot_token");
-      localStorage.removeItem("flowpilot_user");
-      return null;
-    }
-  });
+const metrics = [
+  { label: "Public GitHub Repos", value: "16", detail: "AI, MERN, ML, SQL, BI" },
+  { label: "Current Internships", value: "2", detail: "Data Science + Data Analytics" },
+  { label: "Academic CGPA", value: "8.65", detail: "CSE & Data Science" },
+  { label: "Project Tracks", value: "4", detail: "ML, BI, SQL, full-stack AI" }
+];
 
-  function save(data) {
-    localStorage.setItem("flowpilot_token", data.token);
-    localStorage.setItem("flowpilot_user", JSON.stringify(data.user));
-    setAuth(data);
+const internships = [
+  {
+    company: "KodNest Technologies",
+    role: "Data Science Internship, Free Intern Learning Track",
+    internId: "KN/INT/FREE/2026/31514",
+    timeline: "Jan 2026 - Present",
+    description:
+      "Flexible learning-track internship focused on structured industry exposure, guided modules, and practical preparation across AI-assisted development and data workflows.",
+    learnings: ["Agentic Development", "Python with AI", "SQL for analysis", "Data Science workflow", "Frontend project building"],
+    tools: ["Python", "SQL", "Data Science", "MERN Frontend", "AI-assisted development"]
+  },
+  {
+    company: "ApexPlanet Software Pvt. Ltd.",
+    role: "Data Analytics Intern",
+    internId: "APSPL2635005",
+    timeline: "May 2026 - Present",
+    description:
+      "Project-oriented analytics internship designed to build hands-on experience with data analysis tasks, business insight generation, and professional reporting.",
+    learnings: ["Data analytics project execution", "Business insights", "Reporting discipline", "Analytical communication"],
+    tools: ["Data Analytics", "Excel", "SQL concepts", "Dashboards", "Business reporting"]
   }
+];
 
-  function logout() {
-    localStorage.removeItem("flowpilot_token");
-    localStorage.removeItem("flowpilot_user");
-    setAuth(null);
+const skillGroups = [
+  {
+    title: "Programming",
+    icon: Code2,
+    skills: ["Python", "SQL", "R", "Scala", "JavaScript", "TypeScript"]
+  },
+  {
+    title: "Data Science & ML",
+    icon: BrainCircuit,
+    skills: ["Pandas", "NumPy", "Scikit-learn", "Regression", "Classification", "EDA", "Feature Engineering"]
+  },
+  {
+    title: "BI & Analytics",
+    icon: BarChart3,
+    skills: ["Power BI", "Tableau", "Microsoft Excel", "Dashboards", "KPI Analysis", "Data Cleaning"]
+  },
+  {
+    title: "Databases",
+    icon: Database,
+    skills: ["MySQL", "PostgreSQL", "MongoDB", "SQL Analysis", "Data Modeling"]
+  },
+  {
+    title: "Web & MERN",
+    icon: Sparkles,
+    skills: ["React", "Node.js", "Express", "Vite", "Tailwind CSS", "JWT Auth", "REST APIs"]
+  },
+  {
+    title: "AI Tools",
+    icon: Star,
+    skills: ["Hugging Face", "AI Chatbots", "Agentic Development", "Prompted Workflows", "Streamlit"]
   }
+];
 
-  return { auth, save, logout };
-}
-
-function LandingPage({ onAuth }) {
-  const [mode, setMode] = useState("register");
-  const [form, setForm] = useState({ name: "", email: "", password: "" });
-  const [loading, setLoading] = useState(false);
-
-  async function submit(event, isDemo = false) {
-    if (event) event.preventDefault();
-    setLoading(true);
-    try {
-      let payload = mode === "register" ? form : { email: form.email, password: form.password };
-      let endpoint = `/auth/${mode}`;
-      
-      if (isDemo) {
-        endpoint = "/auth/login";
-        payload = { email: "demo@flowpilot.ai", password: "password123" };
-      }
-      
-      try {
-        const data = await apiRequest(endpoint, { method: "POST", body: JSON.stringify(payload) });
-        toast.success(isDemo ? "Logged in as Demo User" : "Welcome to FlowPilot!");
-        onAuth(data);
-      } catch (err) {
-        if (isDemo && (err.message.toLowerCase().includes("invalid") || err.message.toLowerCase().includes("not found"))) {
-          // If login fails for demo user, register them on the fly
-          const registerData = await apiRequest("/auth/register", { 
-            method: "POST", 
-            body: JSON.stringify({ name: "Demo User", email: "demo@flowpilot.ai", password: "password123" }) 
-          });
-          toast.success("Demo User created & logged in!");
-          onAuth(registerData);
-        } else {
-          throw err;
-        }
-      }
-    } catch (err) {
-      toast.error(err.message);
-    } finally {
-      setLoading(false);
-    }
+const featuredProjects = [
+  {
+    name: "FlowPilot AI",
+    type: "AI-powered MERN productivity workspace",
+    description:
+      "Built a full-stack productivity platform with smart tasks, notes, email generation, workflow planning, JWT auth, MongoDB, and Hugging Face AI integration.",
+    stack: ["React", "Node.js", "MongoDB", "JWT", "Hugging Face"],
+    repo: "https://github.com/shettyprasad-git/FlowPilot-AI",
+    live: "https://flow-pilot-ai-pink.vercel.app",
+    highlight: "Full-stack AI"
+  },
+  {
+    name: "AI-Hub",
+    type: "Open-source AI chatbot interface",
+    description:
+      "Created a ChatGPT-style AI chatbot with React, Vite, serverless backend behavior, customizable AI responses, and a polished glass UI.",
+    stack: ["React", "Vite", "Hugging Face", "Serverless"],
+    repo: "https://github.com/shettyprasad-git/AI-Hub",
+    live: "https://ai-hub-fawn.vercel.app",
+    highlight: "AI interface"
+  },
+  {
+    name: "SmartLearn AI LMS",
+    type: "AI-powered learning management system",
+    description:
+      "Developed an LMS concept using YouTube course content, Next.js, Node.js, and MySQL to support structured AI-assisted learning.",
+    stack: ["Next.js", "Node.js", "MySQL", "TypeScript"],
+    repo: "https://github.com/shettyprasad-git/SmartLearn-AI-LMS",
+    live: "https://smart-learn-ai-lms.vercel.app",
+    highlight: "EdTech AI"
+  },
+  {
+    name: "Credit Card Fraud Detection",
+    type: "Machine learning classification project",
+    description:
+      "Built a supervised fraud detection pipeline on imbalanced transaction data with preprocessing, scaling, model training, and ROC-AUC style evaluation.",
+    stack: ["Python", "Scikit-learn", "Pandas", "Jupyter"],
+    repo: "https://github.com/shettyprasad-git/Credit-Card-Fraud-Detection",
+    highlight: "ML classification"
+  },
+  {
+    name: "Bangalore House Price Prediction",
+    type: "Regression model with Streamlit app",
+    description:
+      "Performed EDA, cleaning, feature engineering, model serialization, and deployment for a housing price predictor based on location and property features.",
+    stack: ["Python", "Scikit-learn", "Streamlit", "NumPy"],
+    repo: "https://github.com/shettyprasad-git/Bangalore-House-Price-Prediction",
+    highlight: "ML deployment"
+  },
+  {
+    name: "Sales Insights Data Analysis",
+    type: "SQL and Power BI analytics project",
+    description:
+      "Analyzed sales data with SQL and transformed findings into dashboard-ready KPIs for business trend analysis and decision support.",
+    stack: ["SQL", "Power BI", "Data Cleaning", "Dashboards"],
+    repo: "https://github.com/shettyprasad-git/sales-insights-data-analysis",
+    highlight: "BI analytics"
+  },
+  {
+    name: "Pizza Sales SQL Analysis",
+    type: "End-to-end SQL analysis",
+    description:
+      "Used SQL to analyze orders, revenue, customer behavior, aggregation patterns, and sales trends across basic to advanced query levels.",
+    stack: ["SQL", "Aggregation", "Segmentation", "Trend Analysis"],
+    repo: "https://github.com/shettyprasad-git/pizza-sales-sql-analysis",
+    highlight: "SQL depth"
+  },
+  {
+    name: "Ferns and Petals Sales Analysis",
+    type: "Excel sales dashboard",
+    description:
+      "Created an Excel-based sales analysis workflow with functions, pivots, charts, and KPI dashboards for revenue and performance tracking.",
+    stack: ["Excel", "Pivot Tables", "Charts", "KPI Analysis"],
+    repo: "https://github.com/shettyprasad-git/Ferns-and-Petals-Sales-Analysis",
+    highlight: "Excel BI"
   }
+];
 
+const moreProjects = [
+  {
+    name: "kodbank",
+    description: "Banking web app with React, Node.js, MySQL, JWT auth, dashboard UI, and AI customer support chatbot.",
+    repo: "https://github.com/shettyprasad-git/kodbank",
+    live: "https://kodbank-backend.vercel.app",
+    language: "JavaScript"
+  },
+  {
+    name: "Entertainment-kit",
+    description: "Entertainment platform clone with TMDB integration, auth, React, Tailwind, Node.js, and cloud watchlist features.",
+    repo: "https://github.com/shettyprasad-git/Entertainment-kit",
+    live: "https://entertainment-kit-backend.vercel.app",
+    language: "JavaScript"
+  },
+  {
+    name: "Wedding Expense Tracker",
+    description: "Responsive JavaScript expense tracker deployed on Vercel for structured event budget management.",
+    repo: "https://github.com/shettyprasad-git/Wedding-Expense-Tracker",
+    live: "https://wedding-expense-tracker-indol.vercel.app",
+    language: "JavaScript"
+  },
+  {
+    name: "Job Ecosystem",
+    description: "TypeScript web project exploring job ecosystem flows and application-style user experiences.",
+    repo: "https://github.com/shettyprasad-git/Job_Ecosystem",
+    live: "https://job-ecosystem.vercel.app",
+    language: "TypeScript"
+  },
+  {
+    name: "Weather App",
+    description: "React weather dashboard using Weatherstack API for current and historical weather data with filters.",
+    repo: "https://github.com/shettyprasad-git/weather-app",
+    live: "https://weather-app-two-omega-75.vercel.app",
+    language: "JavaScript"
+  },
+  {
+    name: "Sales Prediction Using Python",
+    description: "Regression project forecasting sales from advertising data with EDA, visualization, and Streamlit delivery.",
+    repo: "https://github.com/shettyprasad-git/Sales-Prediction-Using-Python",
+    language: "Jupyter Notebook"
+  },
+  {
+    name: "Titanic Survival Prediction",
+    description: "Classification project with preprocessing, feature engineering, missing-value handling, and model validation.",
+    repo: "https://github.com/shettyprasad-git/Titanic-Survival-Prediction",
+    language: "Jupyter Notebook"
+  },
+  {
+    name: "GitHub Profile README",
+    description: "Personal GitHub profile repository for public developer profile presentation.",
+    repo: "https://github.com/shettyprasad-git/shettyprasad-git",
+    language: "Profile"
+  }
+];
+
+const experiences = [
+  {
+    title: "PwC Switzerland Power BI Job Simulation",
+    organization: "Forage",
+    period: "Sep 2024",
+    points: [
+      "Created Power BI dashboards to communicate KPIs for business decision-making.",
+      "Analyzed HR data and gender-related executive management KPIs.",
+      "Delivered concise insights and actionable recommendations."
+    ]
+  },
+  {
+    title: "Deloitte Australia Data Analytics Job Simulation",
+    organization: "Forage",
+    period: "Jan 2026",
+    points: [
+      "Completed a simulation involving data analysis and forensic technology tasks.",
+      "Built Tableau dashboards to visualize business metrics and trends.",
+      "Used Excel to classify data, analyze patterns, and draw business conclusions."
+    ]
+  }
+];
+
+const certifications = [
+  {
+    name: "What is Data Science?",
+    issuer: "IBM / Coursera",
+    period: "Sep 2025",
+    link: "https://www.coursera.org/account/accomplishments/records/3S82860UDF6M",
+    skills: ["Data science roles", "Analytics lifecycle", "Business problem framing"]
+  },
+  {
+    name: "Getting Started with Data",
+    issuer: "IBM",
+    period: "Oct 2025",
+    link: "https://www.credly.com/badges/1ea5cd3e-0956-41a2-a9e0-c39a5c8cd677/linked_in_profile",
+    skills: ["Data basics", "Data sources", "Data-driven decisions"]
+  },
+  {
+    name: "Data Fundamentals",
+    issuer: "IBM",
+    period: "Oct 2025",
+    link: "https://www.credly.com/badges/71eb5cdb-19c1-4256-8e42-92632f20f63d/linked_in_profile",
+    skills: ["Data literacy", "Data quality", "Analytics foundations"]
+  },
+  {
+    name: "Data Science Foundations - Level 1",
+    issuer: "IBM",
+    period: "Oct 2025",
+    link: "https://www.credly.com/badges/392c3df3-5b8b-47b0-8e07-395c36da5bdd/linked_in_profile",
+    skills: ["Data science methodology", "Modeling concepts", "Applied analytics"]
+  },
+  {
+    name: "Data Science Methodologies",
+    issuer: "IBM",
+    period: "Oct 2025",
+    link: "https://www.credly.com/badges/276addf1-811e-4b9c-82b1-dab697fe0855/linked_in_profile",
+    skills: ["CRISP-style workflows", "Problem definition", "Evaluation planning"]
+  },
+  {
+    name: "Data Science Tools",
+    issuer: "IBM",
+    period: "Oct 2025",
+    link: "https://www.credly.com/badges/b9a3c8a5-f5cb-4a4a-8bab-4bdd9865d11c/linked_in_profile",
+    skills: ["Jupyter", "IBM Watson Studio", "Open-source tooling"]
+  },
+  {
+    name: "Data Science Foundations - Level 2 (V2)",
+    issuer: "IBM",
+    period: "Oct 2025",
+    link: "https://www.credly.com/badges/4ebd5893-92e4-4be0-9afc-9939f6f0abdf/linked_in_profile",
+    skills: ["Machine learning basics", "Data preparation", "Model interpretation"]
+  },
+  {
+    name: "Data Science and Machine Learning",
+    issuer: "Udemy",
+    period: "2025",
+    link: "https://www.udemy.com/certificate/UC-ec6274c0-0b6e-4c46-a099-4440ee98ad8e/",
+    skills: ["Python ML", "Model building", "Practical data projects"]
+  }
+];
+
+const navItems = [
+  { label: "About", href: "#about" },
+  { label: "Internships", href: "#internships" },
+  { label: "Skills", href: "#skills" },
+  { label: "Projects", href: "#projects" },
+  { label: "Certificates", href: "#certificates" },
+  { label: "Contact", href: "#contact" }
+];
+
+function App() {
   return (
-    <main className="min-h-screen overflow-hidden bg-ink text-white selection:bg-cyan-500/30">
-      <div className="hero-grid absolute inset-0" />
-      <div className="absolute left-1/2 top-0 -z-10 h-[500px] w-[800px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-cyan-500/20 opacity-50 blur-[120px]" />
-      <div className="absolute bottom-0 right-0 -z-10 h-[400px] w-[600px] rounded-full bg-indigo-500/10 blur-[100px]" />
-
-      <nav className="relative z-20 flex items-center justify-between p-6 lg:px-12">
-        <div className="flex items-center gap-3">
-          <div className="grid h-10 w-10 place-items-center rounded-xl bg-gradient-to-br from-cyan-400 to-indigo-500 text-white shadow-lg shadow-cyan-500/20">
-            <Rocket size={20} />
-          </div>
-          <span className="text-xl font-bold tracking-tight">FlowPilot</span>
-        </div>
-        <button onClick={() => submit(null, true)} className="rounded-full border border-cyan-500/30 bg-cyan-500/10 px-5 py-2 text-sm font-medium text-cyan-300 transition hover:bg-cyan-500/20 hover:shadow-[0_0_15px_rgba(34,211,238,0.2)]">
-          Try Demo Mode
-        </button>
-      </nav>
-
-      <section className="relative z-10 mx-auto grid max-w-7xl items-center gap-16 px-6 py-12 lg:grid-cols-[1.1fr_0.9fr] lg:py-20">
-        <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, ease: "easeOut" }}>
-          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-cyan-200 backdrop-blur-md">
-            <Sparkles size={16} className="text-cyan-400" /> Free-tier AI productivity OS
-          </div>
-          <h1 className="text-5xl font-extrabold leading-[1.1] tracking-tight md:text-7xl">
-            Command your <br />
-            <span className="bg-gradient-to-r from-cyan-400 via-indigo-400 to-purple-400 bg-clip-text text-transparent">workflow</span> with AI.
-          </h1>
-          <p className="mt-6 max-w-xl text-lg leading-relaxed text-slate-300">
-            A unified workspace for students and teams. Replace disjointed tools with an all-in-one dashboard featuring AI chat, smart tasks, automated notes, and email generation.
-          </p>
-
-          <div className="mt-10 grid gap-4 sm:grid-cols-2">
-            {[
-              { icon: Zap, text: "Instant AI Summaries" },
-              { icon: Target, text: "Smart Task Prioritization" },
-              { icon: Mail, text: "Professional Email Drafting" },
-              { icon: Workflow, text: "Sprint & Exam Planning" }
-            ].map((item, i) => (
-              <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2 + i * 0.1 }} key={i} className="flex items-center gap-3 rounded-xl border border-white/5 bg-white/[0.02] p-4 backdrop-blur-sm transition hover:bg-white/[0.04]">
-                <div className="rounded-lg bg-indigo-500/20 p-2 text-indigo-300">
-                  <item.icon size={18} />
-                </div>
-                <span className="font-medium text-slate-200">{item.text}</span>
-              </motion.div>
-            ))}
-          </div>
-
-          <div className="mt-12 rounded-2xl border border-white/10 bg-white/[0.03] p-6 backdrop-blur-md">
-            <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-slate-400">Future Scope</h3>
-            <div className="flex flex-wrap gap-2">
-              {["Calendar Sync", "Slack Integration", "Voice Assistant", "Team Collaboration"].map(tag => (
-                <span key={tag} className="rounded-full bg-white/5 px-3 py-1 text-xs font-medium text-slate-300">{tag}</span>
-              ))}
-            </div>
-          </div>
-        </motion.div>
-
-        <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.6, delay: 0.2 }} className="relative">
-          <div className="absolute -inset-1 rounded-2xl bg-gradient-to-br from-cyan-500/20 to-purple-500/20 blur-xl" />
-          <form onSubmit={(e) => submit(e)} className="glass-panel glow-hover relative p-8">
-            <div className="mb-8 flex items-center justify-between border-b border-white/10 pb-6">
-              <div>
-                <p className="text-sm font-medium text-cyan-400">{mode === "register" ? "Start your journey" : "Welcome back"}</p>
-                <h2 className="mt-1 text-2xl font-bold">{mode === "register" ? "Create workspace" : "Log in to workspace"}</h2>
-              </div>
-              <div className="grid h-12 w-12 place-items-center rounded-full bg-white/5 text-cyan-300">
-                <LayoutDashboard size={24} />
-              </div>
-            </div>
-
-            <div className="grid gap-5">
-              {mode === "register" && (
-                <label className="field-label mb-0">
-                  Full Name
-                  <input required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="John Doe" className="mt-1 bg-black/20 focus:bg-black/40" />
-                </label>
-              )}
-              <label className="field-label mb-0">
-                Email Address
-                <input required type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} placeholder="you@example.com" className="mt-1 bg-black/20 focus:bg-black/40" />
-              </label>
-              <label className="field-label mb-0">
-                Password
-                <input required type="password" minLength={6} value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} placeholder="••••••••" className="mt-1 bg-black/20 focus:bg-black/40" />
-              </label>
-            </div>
-
-            <button className="primary-button mt-8 w-full shadow-[0_0_20px_rgba(103,232,249,0.3)]" disabled={loading}>
-              {loading ? "Working..." : mode === "register" ? "Create account" : "Log in"}
-            </button>
-            <button type="button" className="mt-5 w-full text-sm font-medium text-slate-400 transition hover:text-white" onClick={() => setMode(mode === "register" ? "login" : "register")}>
-              {mode === "register" ? "Already have an account? Log in" : "Need an account? Register"}
-            </button>
-          </form>
-        </motion.div>
-      </section>
+    <main className="min-h-screen bg-[#f7f8f4] text-[#17221f]">
+      <HeaderNav />
+      <Hero />
+      <About />
+      <Internships />
+      <Skills />
+      <Projects />
+      <Experience />
+      <Contact />
     </main>
   );
 }
 
-function Skeleton({ className = "", type = "text" }) {
-  if (type === "card") {
-    return <div className={`animate-pulse rounded-xl bg-white/[0.05] ${className}`} />;
-  }
-  return <div className={`animate-pulse rounded bg-white/[0.08] ${className}`} />;
-}
-
-function Counter({ from, to }) {
-  const [count, setCount] = useState(from);
-  useEffect(() => {
-    const controls = animate(from, to, {
-      duration: 1,
-      onUpdate(value) {
-        setCount(Math.round(value));
-      }
-    });
-    return () => controls.stop();
-  }, [from, to]);
-  return <>{count}</>;
-}
-
-// Simple animation helper for Counter
-function animate(from, to, options) {
-  let start = performance.now();
-  let frame;
-  function update(time) {
-    let progress = Math.min((time - start) / (options.duration * 1000), 1);
-    options.onUpdate(from + (to - from) * progress);
-    if (progress < 1) frame = requestAnimationFrame(update);
-  }
-  frame = requestAnimationFrame(update);
-  return { stop: () => cancelAnimationFrame(frame) };
-}
-
-function ProgressRing({ radius, stroke, progress }) {
-  const normalizedRadius = radius - stroke * 2;
-  const circumference = normalizedRadius * 2 * Math.PI;
-  const strokeDashoffset = circumference - (progress / 100) * circumference;
-
+function HeaderNav() {
   return (
-    <div className="relative grid place-items-center">
-      <svg height={radius * 2} width={radius * 2} className="rotate-[-90deg]">
-        <circle stroke="rgba(255,255,255,0.05)" fill="transparent" strokeWidth={stroke} r={normalizedRadius} cx={radius} cy={radius} />
-        <motion.circle
-          stroke="url(#gradient)"
-          fill="transparent"
-          strokeWidth={stroke}
-          strokeDasharray={circumference + " " + circumference}
-          style={{ strokeDashoffset }}
-          strokeLinecap="round"
-          r={normalizedRadius}
-          cx={radius}
-          cy={radius}
-          initial={{ strokeDashoffset: circumference }}
-          animate={{ strokeDashoffset }}
-          transition={{ duration: 1.5, ease: "easeOut" }}
-        />
-        <defs>
-          <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor="#22d3ee" />
-            <stop offset="100%" stopColor="#818cf8" />
-          </linearGradient>
-        </defs>
-      </svg>
-      <div className="absolute flex flex-col items-center justify-center">
-        <span className="text-3xl font-bold text-white"><Counter from={0} to={progress} />%</span>
-        <span className="text-[10px] uppercase tracking-wider text-slate-400">Score</span>
-      </div>
-    </div>
-  );
-}
-
-function Shell({ user, onLogout, onUpdateUser }) {
-  const [view, setView] = useState("dashboard");
-  const [tasks, setTasks] = useState([]);
-  const [notes, setNotes] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
-  async function refresh() {
-    setLoading(true);
-    try {
-      const [taskData, noteData] = await Promise.all([apiRequest("/tasks"), apiRequest("/notes")]);
-      setTasks(taskData);
-      setNotes(noteData);
-    } catch (err) {
-      toast.error("Failed to load workspace data: " + err.message);
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  useEffect(() => {
-    refresh();
-  }, []);
-
-  const stats = useMemo(() => {
-    const completed = tasks.filter((task) => task.status === "Completed").length;
-    const rate = tasks.length ? Math.round((completed / tasks.length) * 100) : 0;
-    const score = Math.min(98, 55 + rate + Math.min(tasks.length * 3, 24));
-    return { completed, rate, score, total: tasks.length };
-  }, [tasks]);
-
-  const SidebarContent = () => (
-    <>
-      <div className="mb-8 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="grid h-10 w-10 place-items-center rounded-lg bg-gradient-to-br from-cyan-400 to-indigo-500 text-white shadow-lg shadow-cyan-500/20">
-            <PanelLeft size={20} />
-          </div>
-          <div>
-            <p className="font-bold tracking-tight">FlowPilot AI</p>
-            <p className="text-xs font-medium text-cyan-400">Workspace</p>
-          </div>
+    <header className="sticky top-0 z-50 border-b border-[#17221f]/10 bg-[#f7f8f4]/90 backdrop-blur-xl">
+      <nav className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:flex-nowrap lg:px-8">
+        <a href="#top" className="flex min-w-0 items-center gap-3">
+          <span className="grid h-10 w-10 place-items-center rounded-lg bg-[#17221f] text-sm font-black text-white">
+            DP
+          </span>
+          <span className="hidden text-sm font-bold uppercase tracking-[0.16em] text-[#17221f] sm:block">
+            Durga Prasad
+          </span>
+        </a>
+        <div className="nav-menu order-3 flex w-full items-center gap-1 overflow-x-auto lg:order-none lg:w-auto">
+          {navItems.map((item) => (
+            <a key={item.label} href={item.href} className="nav-link">
+              {item.label}
+            </a>
+          ))}
         </div>
-        <button className="lg:hidden text-slate-400 hover:text-white" onClick={() => setMobileMenuOpen(false)}>
-          <X size={24} />
-        </button>
-      </div>
-      <nav className="grid gap-1">
-        {views.map((item) => {
-          const Icon = item.icon;
-          const isActive = view === item.id;
-          return (
-            <button key={item.id} className={`nav-button group ${isActive ? "active relative overflow-hidden" : ""}`} onClick={() => { setView(item.id); setMobileMenuOpen(false); }}>
-              {isActive && <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/10 to-transparent" />}
-              <Icon size={18} className={isActive ? "text-cyan-400" : "text-slate-400 group-hover:text-slate-300"} /> 
-              <span className="font-medium">{item.label}</span>
-            </button>
-          );
-        })}
+        <a href={profile.resume} target="_blank" rel="noreferrer" className="small-button">
+          <FileText size={16} />
+          Resume
+        </a>
       </nav>
-      <div className="mt-auto pt-8">
-        <div className="rounded-xl border border-white/5 bg-white/[0.02] p-4 backdrop-blur-sm">
-          <p className="text-sm font-medium">{user.name}</p>
-          <p className="truncate text-xs text-slate-400">{user.email}</p>
-          <button className="mt-4 flex w-full items-center justify-center gap-2 rounded-lg bg-white/5 py-2 text-sm font-medium text-slate-300 transition hover:bg-white/10 hover:text-white" onClick={() => {
-            onLogout();
-            toast.success("Logged out successfully");
-          }}>
-            <LogOut size={16} /> Log out
-          </button>
-        </div>
-      </div>
-    </>
-  );
-
-  return (
-    <main className="min-h-screen bg-ink text-white selection:bg-cyan-500/30">
-      <div className="app-bg fixed inset-0" />
-      <div className="relative flex min-h-screen flex-col lg:grid lg:grid-cols-[280px_1fr]">
-        
-        {/* Mobile Header */}
-        <header className="flex items-center justify-between border-b border-white/10 bg-black/40 p-4 backdrop-blur-xl lg:hidden">
-          <div className="flex items-center gap-3">
-             <div className="grid h-8 w-8 place-items-center rounded-lg bg-gradient-to-br from-cyan-400 to-indigo-500 text-white">
-                <PanelLeft size={16} />
-              </div>
-              <p className="font-bold">FlowPilot</p>
-          </div>
-          <button onClick={() => setMobileMenuOpen(true)} className="text-slate-300"><Menu size={24} /></button>
-        </header>
-
-        {/* Sidebar */}
-        <aside className={`fixed inset-y-0 left-0 z-50 flex w-72 flex-col border-r border-white/5 bg-[#0a0d1a]/95 p-6 backdrop-blur-2xl transition-transform duration-300 lg:static lg:w-auto lg:translate-x-0 ${mobileMenuOpen ? "translate-x-0" : "-translate-x-full"}`}>
-          <SidebarContent />
-        </aside>
-
-        {/* Overlay */}
-        {mobileMenuOpen && (
-          <div className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm lg:hidden" onClick={() => setMobileMenuOpen(false)} />
-        )}
-
-        {/* Main Content */}
-        <section className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 xl:p-10">
-          <div className="mx-auto max-w-6xl">
-            {view === "dashboard" && <Dashboard stats={stats} tasks={tasks} notes={notes} loading={loading} setView={setView} />}
-            {view === "assistant" && <AIComposer feature="chat" title="AI Workspace Assistant" placeholder="Ask FlowPilot to plan, summarize, prioritize, or brainstorm..." suggestions={aiSuggestions.chat} />}
-            {view === "tasks" && <Tasks tasks={tasks} setTasks={setTasks} loading={loading} />}
-            {view === "notes" && <Notes notes={notes} setNotes={setNotes} loading={loading} />}
-            {view === "email" && <AIComposer feature="email" title="AI Email Generator" placeholder="Example: Write an internship application email for a frontend role..." suggestions={aiSuggestions.email} />}
-            {view === "workflow" && <AIComposer feature="workflow" title="AI Workflow Suggestions" placeholder="Example: I am preparing for exams and internship applications..." suggestions={aiSuggestions.workflow} />}
-            {view === "planner" && <Planner />}
-            {view === "settings" && <Settings user={user} onUpdateUser={onUpdateUser} />}
-          </div>
-        </section>
-      </div>
-    </main>
-  );
-}
-
-function Dashboard({ stats, tasks, notes, loading, setView }) {
-  const cards = [
-    { label: "Completion rate", value: stats.rate, suffix: "%", icon: CheckCircle2, color: "text-emerald-400" },
-    { label: "Active tasks", value: stats.total, suffix: "", icon: ClipboardList, color: "text-cyan-400" },
-    { label: "Completed", value: stats.completed, suffix: "", icon: Clock3, color: "text-purple-400" }
-  ];
-
-  return (
-    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
-      <Header eyebrow="Command center" title="Today's workflow cockpit" />
-      
-      <div className="grid gap-6 md:grid-cols-[250px_1fr]">
-        <div className="glass-panel glow-hover flex flex-col items-center justify-center p-6 text-center">
-          <ProgressRing radius={70} stroke={12} progress={stats.score} />
-          <p className="mt-4 font-medium text-slate-200">AI Productivity Index</p>
-          <p className="mt-1 text-xs text-slate-400">Based on task completion & focus</p>
-        </div>
-
-        <div className="grid gap-4 sm:grid-cols-3">
-          {cards.map((card, i) => {
-            const Icon = card.icon;
-            return (
-              <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.1 * i }} className="glass-panel glow-hover flex flex-col justify-between p-6" key={card.label}>
-                <div className="flex items-center justify-between">
-                  <Icon className={card.color} size={24} />
-                  <div className={`h-8 w-8 rounded-full bg-white/5 grid place-items-center ${card.color}`}><Sparkles size={14}/></div>
-                </div>
-                <div className="mt-4">
-                  <p className="text-4xl font-bold tracking-tight"><Counter from={0} to={card.value} />{card.suffix}</p>
-                  <p className="mt-1 text-sm font-medium text-slate-400">{card.label}</p>
-                </div>
-              </motion.div>
-            );
-          })}
-        </div>
-      </div>
-
-      <div className="mt-8 grid gap-6 xl:grid-cols-[1fr_1fr]">
-        <Panel title="Quick actions" icon={<Zap size={18} className="text-yellow-400" />}>
-          <div className="grid gap-3 sm:grid-cols-2">
-            {views.slice(1).map((item) => {
-              const Icon = item.icon;
-              return (
-                <button className="action-tile group relative overflow-hidden bg-white/[0.03] hover:bg-white/[0.06] border-white/5" key={item.id} onClick={() => setView(item.id)}>
-                  <div className="rounded-lg bg-black/30 p-2 group-hover:bg-cyan-500/20 group-hover:text-cyan-300 transition-colors">
-                    <Icon size={20} />
-                  </div>
-                  <span className="font-medium text-sm">{item.label}</span>
-                </button>
-              );
-            })}
-          </div>
-        </Panel>
-
-        <Panel title="Latest intelligence" icon={<Bot size={18} className="text-cyan-400" />}>
-          {loading ? (
-             <div className="grid gap-3"><Skeleton className="h-6 w-3/4" /><Skeleton className="h-4 w-full" /><Skeleton className="h-4 w-5/6" /></div>
-          ) : notes[0] ? (
-            <div className="group rounded-xl bg-white/[0.02] p-4 border border-white/5 transition hover:bg-white/[0.04]">
-              <p className="font-semibold text-cyan-50">{notes[0].title}</p>
-              <p className="mt-2 line-clamp-4 text-sm leading-relaxed text-slate-400">{notes[0].summary}</p>
-            </div>
-          ) : (
-            <EmptyState icon={FileText} text="No notes analyzed yet. Paste lecture or meeting notes to generate AI summaries." />
-          )}
-        </Panel>
-      </div>
-
-      <Panel title="Priority lane" className="mt-8" icon={<Target size={18} className="text-rose-400" />}>
-        {loading ? (
-           <div className="grid gap-4 lg:grid-cols-3">
-             <Skeleton type="card" className="h-32 w-full" />
-             <Skeleton type="card" className="h-32 w-full" />
-             <Skeleton type="card" className="h-32 w-full" />
-           </div>
-        ) : tasks.length ? (
-          <div className="grid gap-4 lg:grid-cols-3">
-            {tasks.slice(0, 6).map((task) => <TaskCard key={task.id} task={task} compact />)}
-          </div>
-        ) : (
-          <EmptyState icon={ClipboardList} text="No tasks yet. Add starter tasks from the Task Board to prepare your workflow." />
-        )}
-      </Panel>
-    </motion.div>
-  );
-}
-
-function Tasks({ tasks, setTasks, loading }) {
-  const [form, setForm] = useState({ title: "", description: "", priority: "Medium", status: "Pending", category: "General", estimateMinutes: 45 });
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const columns = ["Pending", "In Progress", "Completed"];
-
-  async function addTask(event) {
-    event.preventDefault();
-    if (!form.title.trim()) return;
-    setIsSubmitting(true);
-    try {
-      const task = await apiRequest("/tasks", { method: "POST", body: JSON.stringify(form) });
-      setTasks([task, ...tasks]);
-      setForm({ ...form, title: "", description: "" });
-      toast.success("Task added successfully");
-    } catch (err) {
-      toast.error(err.message);
-    } finally {
-      setIsSubmitting(false);
-    }
-  }
-
-  async function updateTask(id, patch) {
-    try {
-      const updated = await apiRequest(`/tasks/${id}`, { method: "PATCH", body: JSON.stringify(patch) });
-      setTasks(tasks.map((task) => (task.id === id ? updated : task)));
-      if (patch.status === "Completed") toast.success("Task completed! 🎉");
-    } catch (err) {
-      toast.error(err.message);
-    }
-  }
-
-  async function deleteTask(id) {
-    try {
-      await apiRequest(`/tasks/${id}`, { method: "DELETE" });
-      setTasks(tasks.filter((task) => task.id !== id));
-      toast.success("Task deleted");
-    } catch (err) {
-      toast.error(err.message);
-    }
-  }
-
-  async function addStarterTasks() {
-    setIsSubmitting(true);
-    try {
-      const created = [];
-      for (const task of starterTasks) {
-        created.push(await apiRequest("/tasks", { method: "POST", body: JSON.stringify(task) }));
-      }
-      setTasks([...created, ...tasks]);
-      toast.success("Starter tasks added");
-    } catch (err) {
-      toast.error(err.message);
-    } finally {
-      setIsSubmitting(false);
-    }
-  }
-
-  if (loading) return <div className="p-8"><Skeleton className="h-10 w-48 mb-8" /><Skeleton type="card" className="h-32 w-full" /></div>;
-
-  return (
-    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
-      <Header eyebrow="Task automation" title="Smart task board" />
-      <Panel title="Create task">
-        <form onSubmit={addTask} className="grid gap-4 lg:grid-cols-[1.2fr_1fr_120px_120px_100px_120px]">
-          <input required value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="Task title" className="bg-black/20" />
-          <input value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="Description (optional)" className="bg-black/20" />
-          <select value={form.priority} onChange={(e) => setForm({ ...form, priority: e.target.value })} className="bg-black/20">
-            <option>Low</option>
-            <option>Medium</option>
-            <option>High</option>
-          </select>
-          <input value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} placeholder="Category" className="bg-black/20" />
-          <input type="number" min="5" step="5" value={form.estimateMinutes} onChange={(e) => setForm({ ...form, estimateMinutes: e.target.value })} aria-label="Minutes" className="bg-black/20" />
-          <button className="primary-button" disabled={isSubmitting}>{isSubmitting ? "Adding..." : "Add Task"}</button>
-        </form>
-        {!tasks.length && !isSubmitting && <button className="secondary-button mt-4" onClick={addStarterTasks}><Sparkles size={16} className="inline mr-2 text-cyan-400" /> Auto-fill starter tasks</button>}
-      </Panel>
-
-      <div className="mt-8 grid gap-6 xl:grid-cols-3">
-        {columns.map((column) => (
-          <div key={column} className="rounded-2xl border border-white/5 bg-white/[0.01] p-4">
-            <h3 className="mb-4 flex items-center justify-between font-semibold text-slate-200">
-              {column}
-              <span className="grid h-6 w-6 place-items-center rounded-full bg-white/10 text-xs">{tasks.filter(t => t.status === column).length}</span>
-            </h3>
-            <div className="grid min-h-64 gap-3">
-              <AnimatePresence>
-                {tasks.filter((task) => task.status === column).map((task) => (
-                  <motion.div key={task.id} initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }} transition={{ duration: 0.2 }}>
-                    <TaskCard task={task} onStatus={(status) => updateTask(task.id, { status })} onDelete={() => deleteTask(task.id)} />
-                  </motion.div>
-                ))}
-              </AnimatePresence>
-              {!tasks.filter(t => t.status === column).length && (
-                <div className="grid place-items-center rounded-xl border border-dashed border-white/10 bg-transparent p-6 text-sm text-slate-500">
-                  Drop here
-                </div>
-              )}
-            </div>
-          </div>
-        ))}
-      </div>
-    </motion.div>
-  );
-}
-
-function TaskCard({ task, onStatus, onDelete, compact }) {
-  return (
-    <div className="glow-hover rounded-xl border border-white/10 bg-[#12182b] p-4 shadow-lg transition-all hover:-translate-y-1">
-      <div className="flex items-start justify-between gap-3">
-        <p className="font-medium text-slate-100">{task.title}</p>
-        <div className="flex items-center gap-2">
-          <span className={`pill ${task.priority.toLowerCase()}`}>{task.priority}</span>
-          {!compact && onDelete && (
-            <button className="icon-button h-7 w-7 opacity-50 hover:opacity-100" type="button" onClick={onDelete} aria-label={`Delete ${task.title}`}>
-              <Trash2 size={13} />
-            </button>
-          )}
-        </div>
-      </div>
-      {task.description && <p className="mt-2 text-sm leading-relaxed text-slate-400">{task.description}</p>}
-      <div className="mt-4 flex flex-wrap items-center gap-2 text-xs font-medium text-slate-300">
-        <span className="flex items-center gap-1 rounded-md bg-white/5 px-2 py-1"><Target size={12} className="text-indigo-400"/> {task.category}</span>
-        <span className="flex items-center gap-1 rounded-md bg-white/5 px-2 py-1"><Clock3 size={12} className="text-cyan-400"/> {task.estimateMinutes} min</span>
-      </div>
-      {!compact && onStatus && (
-        <div className="mt-5 grid grid-cols-3 gap-2 border-t border-white/5 pt-4">
-          {["Pending", "In Progress", "Completed"].map((status) => (
-            <button key={status} className={`mini-button text-[11px] font-semibold uppercase tracking-wider ${task.status === status ? "border-cyan-500/50 bg-cyan-500/10 text-cyan-300" : ""}`} onClick={() => onStatus(status)}>
-              {status}
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
-function Notes({ notes, setNotes, loading }) {
-  const [form, setForm] = useState({ title: "", content: "" });
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  async function submit(event) {
-    event.preventDefault();
-    if (!form.title.trim() || !form.content.trim()) return;
-    setIsSubmitting(true);
-    const toastId = toast.loading("Analyzing notes with AI...");
-    try {
-      const note = await apiRequest("/notes", { method: "POST", body: JSON.stringify(form) });
-      setNotes([note, ...notes]);
-      setForm({ title: "", content: "" });
-      toast.success("Notes summarized successfully", { id: toastId });
-    } catch (err) {
-      toast.error(err.message, { id: toastId });
-    } finally {
-      setIsSubmitting(false);
-    }
-  }
-
-  async function deleteNote(id) {
-    try {
-      await apiRequest(`/notes/${id}`, { method: "DELETE" });
-      setNotes(notes.filter((note) => note.id !== id));
-      toast.success("Note deleted");
-    } catch (err) {
-      toast.error(err.message);
-    }
-  }
-
-  if (loading) return <div className="p-8"><Skeleton className="h-10 w-48 mb-8" /><Skeleton type="card" className="h-64 w-full" /></div>;
-
-  return (
-    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
-      <Header eyebrow="Smart learning" title="AI Note Summarizer" />
-      <Panel title="Paste raw notes">
-        <form onSubmit={submit} className="grid gap-4">
-          <input required value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="Lecture or meeting title" className="bg-black/20" />
-          <textarea required rows={6} value={form.content} onChange={(e) => setForm({ ...form, content: e.target.value })} placeholder="Paste raw notes, transcripts, or meeting logs here..." className="bg-black/20" />
-          <button className="primary-button justify-self-start shadow-[0_0_15px_rgba(103,232,249,0.2)]" disabled={isSubmitting}>
-            {isSubmitting ? <><Bot className="mr-2 animate-pulse" size={18} /> Analyzing...</> : <><Sparkles className="mr-2" size={18} /> Generate Insights</>}
-          </button>
-        </form>
-      </Panel>
-      <div className="mt-8 grid gap-6 lg:grid-cols-2">
-        <AnimatePresence>
-          {notes.map((note) => (
-            <motion.div key={note.id} initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}>
-              <NoteCard note={note} onDelete={() => deleteNote(note.id)} />
-            </motion.div>
-          ))}
-        </AnimatePresence>
-        {!notes.length && <div className="col-span-full"><EmptyState icon={NotebookText} text="Your generated summaries, action items, and flashcards will appear here." /></div>}
-      </div>
-    </motion.div>
-  );
-}
-
-function NoteCard({ note, onDelete }) {
-  return (
-    <div className="glass-panel glow-hover relative overflow-hidden p-6">
-      <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-cyan-400 to-indigo-500" />
-      <div className="flex items-start justify-between gap-4 border-b border-white/5 pb-4 mb-4">
-        <h3 className="text-xl font-semibold text-slate-100">{note.title}</h3>
-        <button className="icon-button flex-shrink-0" type="button" onClick={onDelete} aria-label="Delete note">
-          <Trash2 size={16} />
-        </button>
-      </div>
-      
-      <div className="mb-6 rounded-lg bg-[#070912]/50 p-4">
-        <h4 className="mb-2 flex items-center gap-2 text-sm font-semibold text-cyan-300">
-          <Bot size={16} /> AI Summary
-        </h4>
-        <p className="whitespace-pre-wrap text-sm leading-relaxed text-slate-300">{note.summary}</p>
-      </div>
-
-      <StructuredList title="Key Points" items={note.keyPoints} icon={Target} color="text-indigo-300" />
-      <StructuredList title="Action Items" items={note.actionItems} icon={CheckCircle2} color="text-emerald-300" />
-      
-      {note.flashcards?.length > 0 && (
-        <div className="mt-6">
-          <h4 className="mb-3 flex items-center gap-2 text-sm font-semibold text-purple-300">
-            <Zap size={16} /> Study Flashcards
-          </h4>
-          <div className="grid gap-3">
-            {note.flashcards.map((card, index) => (
-              <div className="rounded-xl border border-white/5 bg-white/[0.02] p-4 transition-colors hover:bg-white/[0.04]" key={index}>
-                <p className="font-medium text-slate-200">Q: {card.question}</p>
-                <div className="mt-2 border-t border-white/5 pt-2">
-                  <p className="text-sm leading-relaxed text-slate-400">A: {card.answer}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
-function StructuredList({ title, items = [], icon: Icon, color }) {
-  if (!items.length) return null;
-  return (
-    <div className="mb-6 last:mb-0">
-      <h4 className={`mb-3 flex items-center gap-2 text-sm font-semibold ${color}`}>
-        <Icon size={16} /> {title}
-      </h4>
-      <ul className="grid gap-2 text-sm text-slate-300">
-        {items.map((item, index) => (
-          <li className="flex items-start gap-2 rounded-lg bg-white/[0.02] px-3 py-2.5 leading-relaxed" key={index}>
-             <div className={`mt-1 h-1.5 w-1.5 rounded-full ${color.replace('text-', 'bg-')}`} />
-             {item}
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
-}
-
-function AIComposer({ feature, title, placeholder, suggestions }) {
-  const [prompt, setPrompt] = useState("");
-  const [result, setResult] = useState("");
-  const [provider, setProvider] = useState("");
-  const [model, setModel] = useState("Auto");
-  const [isGenerating, setIsGenerating] = useState(false);
-
-  async function submit(event, presetPrompt) {
-    if (event) event.preventDefault();
-    const finalPrompt = presetPrompt || prompt;
-    if (!finalPrompt.trim()) return;
-    
-    if (presetPrompt) setPrompt(presetPrompt);
-    
-    setIsGenerating(true);
-    setResult("");
-    const toastId = toast.loading(`AI (${model}) is generating response...`);
-    
-    try {
-      const data = await apiRequest(`/ai/${feature}`, {
-        method: "POST",
-        body: JSON.stringify({ prompt: finalPrompt, model })
-      });
-      setResult(data.response || data.summary || "");
-      setProvider(data.provider);
-      toast.success("Generation complete", { id: toastId });
-    } catch (err) {
-      toast.error(err.message, { id: toastId });
-    } finally {
-      setIsGenerating(false);
-    }
-  }
-
-  return (
-    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
-      <Header eyebrow="AI workspace" title={title} />
-      <div className="grid gap-8 lg:grid-cols-[1fr_1.2fr]">
-        <div className="flex flex-col gap-4">
-          <Panel title="Command prompt">
-            <form onSubmit={submit} className="grid gap-4">
-              <div className="flex items-center justify-between">
-                <label className="text-sm font-medium text-slate-300 flex items-center gap-2">
-                  <Bot size={16} className="text-cyan-400" /> Model:
-                </label>
-                <select value={model} onChange={(e) => setModel(e.target.value)} className="bg-black/40 border border-white/10 rounded-lg px-3 py-1.5 text-sm outline-none focus:border-cyan-500/50">
-                  {["Auto", "Zephyr", "Mistral", "Llama", "Gemma", "Qwen"].map(m => (
-                    <option key={m} value={m}>{m === "Auto" ? "Auto (Best for task)" : m}</option>
-                  ))}
-                </select>
-              </div>
-              <textarea 
-                className="w-full resize-y bg-black/20 text-base" 
-                rows={8} 
-                value={prompt} 
-                onChange={(e) => setPrompt(e.target.value)} 
-                placeholder={placeholder} 
-              />
-              <button className="primary-button w-full shadow-[0_0_15px_rgba(103,232,249,0.2)]" disabled={isGenerating}>
-                {isGenerating ? <><Bot className="mr-2 animate-pulse" size={18} /> Processing...</> : <><Sparkles className="mr-2" size={18} /> Generate Response</>}
-              </button>
-            </form>
-          </Panel>
-          {suggestions && (
-            <div className="glass-panel p-4">
-              <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-400">Try asking:</p>
-              <div className="flex flex-wrap gap-2">
-                {suggestions.map((s, i) => (
-                  <button 
-                    key={i} 
-                    onClick={() => submit(null, s)}
-                    className="rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-medium text-cyan-100 transition hover:bg-cyan-500/20 hover:text-cyan-300"
-                    disabled={isGenerating}
-                  >
-                    {s}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-        
-        <Panel title={provider ? `Result (via ${provider})` : "AI Output"} className="relative min-h-[400px]">
-          {result ? (
-            <div className="prose prose-invert max-w-none">
-              <p className="whitespace-pre-wrap text-[15px] leading-relaxed text-slate-200">{result}</p>
-            </div>
-          ) : (
-            <div className="absolute inset-0 grid place-items-center p-6">
-               <EmptyState icon={Bot} text="Enter a prompt on the left and let AI do the heavy lifting." />
-            </div>
-          )}
-        </Panel>
-      </div>
-    </motion.div>
-  );
-}
-
-function Header({ eyebrow, title }) {
-  return (
-    <header className="mb-8">
-      <p className="mb-1 text-sm font-semibold uppercase tracking-wider text-cyan-400">{eyebrow}</p>
-      <h1 className="text-3xl font-extrabold tracking-tight md:text-4xl">{title}</h1>
     </header>
   );
 }
 
-function Panel({ title, children, className = "", icon }) {
+function Hero() {
   return (
-    <section className={`glass-panel p-6 ${className}`}>
-      <h2 className="mb-5 flex items-center gap-2 text-lg font-bold tracking-tight text-white">
-        {icon} {title}
-      </h2>
-      {children}
+    <section id="top" className="portfolio-hero">
+      <div className="mx-auto grid min-h-[calc(84vh-68px)] max-w-7xl items-center gap-10 px-4 py-10 sm:px-6 lg:grid-cols-[1.08fr_0.92fr] lg:px-8 lg:py-12">
+        <div>
+          <div className="eyebrow">
+            <Sparkles size={16} />
+            Data Science, Analytics, AI and MERN Projects
+          </div>
+          <h1 className="mt-6 max-w-4xl text-5xl font-black leading-[0.98] tracking-normal text-[#17221f] sm:text-6xl lg:text-7xl">
+            {profile.name}
+          </h1>
+          <p className="mt-5 max-w-2xl text-2xl font-semibold text-[#31544f] sm:text-3xl">{profile.role}</p>
+          <p className="mt-6 max-w-2xl text-lg leading-8 text-[#465752]">{profile.summary}</p>
+
+          <div className="mt-8 flex flex-wrap gap-3">
+            <a className="primary-button" href={profile.github} target="_blank" rel="noreferrer">
+              <Github size={19} />
+              GitHub
+            </a>
+            <a className="secondary-button" href={profile.linkedin} target="_blank" rel="noreferrer">
+              <Linkedin size={19} />
+              LinkedIn
+            </a>
+            <a className="secondary-button" href={profile.resume} target="_blank" rel="noreferrer">
+              <FileText size={19} />
+              View Resume
+            </a>
+          </div>
+
+          <div className="mt-8 grid gap-3 text-sm font-semibold text-[#52645f] sm:flex sm:flex-wrap sm:gap-x-6">
+            <span className="inline-flex min-w-0 items-center gap-2">
+              <MapPin size={16} /> {profile.location}
+            </span>
+            <span className="inline-flex min-w-0 items-center gap-2 break-all">
+              <Mail size={16} className="shrink-0" /> {profile.email}
+            </span>
+            <span className="inline-flex min-w-0 items-center gap-2">
+              <BriefcaseBusiness size={16} /> Open to Data/AI internships
+            </span>
+          </div>
+        </div>
+
+        <div className="profile-panel">
+          <div className="flex items-start gap-5">
+            <img src={profile.avatar} alt="Durga Prasad GitHub avatar" className="h-24 w-24 rounded-lg object-cover ring-4 ring-white" />
+            <div>
+              <p className="text-sm font-bold uppercase tracking-[0.18em] text-[#4f756c]">Profile Snapshot</p>
+              <h2 className="mt-2 text-2xl font-black text-[#17221f]">CSE + Data Science</h2>
+              <p className="mt-2 text-sm leading-6 text-[#52645f]">Building project evidence across ML, analytics dashboards, SQL, and AI-powered full-stack apps.</p>
+            </div>
+          </div>
+
+          <div className="mt-8 grid gap-3 sm:grid-cols-2">
+            {metrics.map((metric) => (
+              <div key={metric.label} className="metric-tile">
+                <p className="text-3xl font-black text-[#17221f]">{metric.value}</p>
+                <p className="mt-1 text-sm font-bold text-[#2f4d48]">{metric.label}</p>
+                <p className="mt-1 text-xs leading-5 text-[#64736f]">{metric.detail}</p>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-6 rounded-lg border border-[#17221f]/10 bg-white/70 p-4">
+            <p className="text-sm font-bold uppercase tracking-[0.16em] text-[#4f756c]">Current Focus</p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {["Python with AI", "SQL", "Data Science", "Power BI", "MERN Frontend"].map((item) => (
+                <span key={item} className="tag">
+                  {item}
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
     </section>
   );
 }
 
-function EmptyState({ text, icon: Icon = Inbox }) {
+function About() {
   return (
-    <div className="flex w-full flex-col items-center justify-center rounded-xl border border-dashed border-white/10 bg-white/[0.02] p-8 text-center text-slate-400">
-      <div className="mb-4 rounded-full bg-white/5 p-3 text-slate-500">
-        <Icon size={24} />
+    <Section id="about" eyebrow="About" title="A practical data profile with full-stack range">
+      <div className="grid gap-5 lg:grid-cols-[1.1fr_0.9fr]">
+        <div className="content-panel p-6 sm:p-8">
+          <p className="text-lg leading-8 text-[#465752]">
+            Durga Prasad is a Computer Science and Data Science Engineering student at CMR University with a strong foundation in Python, SQL, machine learning, and business analytics. His work combines end-to-end ML pipelines, dashboard storytelling, and deployed AI/MERN applications.
+          </p>
+          <div className="mt-7 grid gap-4 sm:grid-cols-3">
+            {[
+              ["ML Pipelines", "EDA, preprocessing, feature engineering, model evaluation"],
+              ["Dashboards", "Power BI, Tableau, Excel, KPI analysis"],
+              ["AI Apps", "React, Node.js, MongoDB, Hugging Face, JWT"]
+            ].map(([title, text]) => (
+              <div key={title} className="mini-card">
+                <CheckCircle2 size={19} className="text-[#2f7d68]" />
+                <h3 className="mt-3 font-black text-[#17221f]">{title}</h3>
+                <p className="mt-2 text-sm leading-6 text-[#52645f]">{text}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="content-panel p-6 sm:p-8">
+          <div className="section-kicker">
+            <GraduationCap size={18} />
+            Education
+          </div>
+          <div className="mt-5 space-y-4">
+            {profile.education.map((item) => (
+              <div key={item.school} className="timeline-card">
+                <p className="text-sm font-bold text-[#4f756c]">{item.period}</p>
+                <h3 className="mt-1 text-lg font-black text-[#17221f]">{item.school}</h3>
+                <p className="mt-1 text-sm leading-6 text-[#52645f]">{item.program}</p>
+                <p className="mt-2 inline-flex rounded-md bg-[#dcefe4] px-2 py-1 text-xs font-black text-[#245246]">{item.result}</p>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
-      <p className="max-w-xs text-sm leading-relaxed">{text}</p>
-    </div>
+    </Section>
   );
 }
 
-function Settings({ user, onUpdateUser }) {
-  const [loading, setLoading] = useState(false);
-  const [preferences, setPreferences] = useState(user.preferences || {
-    goals: "", workStyle: "Focused", tone: "Professional", focusArea: "General", activeHours: "9 AM - 5 PM"
-  });
-
-  async function savePreferences(e) {
-    e.preventDefault();
-    setLoading(true);
-    try {
-      const updatedUser = await apiRequest("/auth/preferences", { method: "PUT", body: JSON.stringify(preferences) });
-      onUpdateUser(updatedUser);
-      toast.success("Preferences saved securely.");
-    } catch (err) {
-      toast.error(err.message);
-    } finally {
-      setLoading(false);
-    }
-  }
-
+function Internships() {
   return (
-    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-      <Header eyebrow="Personalization" title="AI Settings & Profile" />
-      <Panel title="How AI should interact with you" icon={<SettingsIcon size={18} className="text-cyan-400" />}>
-        <form onSubmit={savePreferences} className="grid gap-6 sm:grid-cols-2">
-          <label className="field-label col-span-full">
-            Productivity Goals
-            <input value={preferences.goals} onChange={(e) => setPreferences({...preferences, goals: e.target.value})} placeholder="e.g. Master React, Finish hackathon, Write thesis..." className="mt-1 bg-black/20" />
-          </label>
-          <label className="field-label">
-            Preferred Work Style
-            <select value={preferences.workStyle} onChange={(e) => setPreferences({...preferences, workStyle: e.target.value})} className="mt-1 bg-black/20">
-              <option>Focused (Pomodoro)</option>
-              <option>Flexible</option>
-              <option>Deep Work (Long blocks)</option>
-              <option>Collaborative</option>
-            </select>
-          </label>
-          <label className="field-label">
-            AI Response Tone
-            <select value={preferences.tone} onChange={(e) => setPreferences({...preferences, tone: e.target.value})} className="mt-1 bg-black/20">
-              <option>Professional</option>
-              <option>Casual & Friendly</option>
-              <option>Strict & Direct</option>
-              <option>Pirate (Fun)</option>
-            </select>
-          </label>
-          <label className="field-label">
-            Primary Focus Area
-            <select value={preferences.focusArea} onChange={(e) => setPreferences({...preferences, focusArea: e.target.value})} className="mt-1 bg-black/20">
-              <option>General</option>
-              <option>Engineering / Coding</option>
-              <option>Design</option>
-              <option>Academics</option>
-              <option>Business</option>
-            </select>
-          </label>
-          <label className="field-label">
-            Active Hours
-            <input value={preferences.activeHours} onChange={(e) => setPreferences({...preferences, activeHours: e.target.value})} placeholder="e.g. 9 AM - 5 PM" className="mt-1 bg-black/20" />
-          </label>
-          <button className="primary-button col-span-full mt-2" disabled={loading}>{loading ? "Saving..." : "Save Preferences"}</button>
-        </form>
-      </Panel>
-    </motion.div>
-  );
-}
-
-function Planner() {
-  const [form, setForm] = useState({ deadline: "End of week", goal: "Complete the landing page frontend" });
-  const [result, setResult] = useState("");
-  const [provider, setProvider] = useState("");
-  const [isGenerating, setIsGenerating] = useState(false);
-
-  async function generate(e) {
-    e.preventDefault();
-    if (!form.goal.trim()) return;
-    setIsGenerating(true);
-    setResult("");
-    
-    try {
-      const data = await apiRequest("/ai/planner", {
-        method: "POST",
-        body: JSON.stringify({ prompt: `Goal: ${form.goal}\nDeadline: ${form.deadline}` })
-      });
-      setResult(data.response);
-      setProvider(data.provider);
-      toast.success("Schedule generated!");
-    } catch (err) {
-      toast.error(err.message);
-    } finally {
-      setIsGenerating(false);
-    }
-  }
-
-  return (
-    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-      <Header eyebrow="Time Management" title="AI Daily Planner" />
-      <div className="grid gap-8 lg:grid-cols-[1fr_1.2fr]">
-        <Panel title="Plan Parameters">
-          <form onSubmit={generate} className="grid gap-5">
-            <label className="field-label">
-              What is your main goal today?
-              <input required value={form.goal} onChange={(e) => setForm({...form, goal: e.target.value})} className="mt-1 bg-black/20" />
-            </label>
-            <label className="field-label">
-              Key Deadlines
-              <input required value={form.deadline} onChange={(e) => setForm({...form, deadline: e.target.value})} className="mt-1 bg-black/20" />
-            </label>
-            <button className="primary-button w-full shadow-[0_0_15px_rgba(103,232,249,0.2)]" disabled={isGenerating}>
-              {isGenerating ? <><Bot className="mr-2 animate-pulse" size={18} /> Routing to best AI...</> : <><Calendar className="mr-2" size={18} /> Generate Schedule</>}
-            </button>
-          </form>
-        </Panel>
-
-        <Panel title={provider ? `Your AI Schedule (${provider})` : "Your Schedule"} className="relative min-h-[400px]">
-          {result ? (
-            <div className="prose prose-invert max-w-none">
-              <p className="whitespace-pre-wrap text-[15px] leading-relaxed text-slate-200">{result}</p>
+    <Section id="internships" eyebrow="Internships" title="Current flexible internships and learning tracks">
+      <div className="grid gap-5 lg:grid-cols-2">
+        {internships.map((internship) => (
+          <article key={internship.company} className="content-panel p-6 sm:p-8">
+            <div className="flex flex-wrap items-start justify-between gap-4">
+              <div>
+                <p className="text-sm font-bold uppercase tracking-[0.16em] text-[#4f756c]">{internship.timeline}</p>
+                <h3 className="mt-2 text-2xl font-black text-[#17221f]">{internship.company}</h3>
+                <p className="mt-1 font-bold text-[#31544f]">{internship.role}</p>
+              </div>
+              <span className="id-pill">
+                ID: {internship.internId}
+              </span>
             </div>
-          ) : (
-             <div className="absolute inset-0 grid place-items-center p-6">
-                <EmptyState icon={Calendar} text="Enter your daily goals and let AI carve out your perfect schedule based on your preferences." />
-             </div>
-          )}
-        </Panel>
+            <p className="mt-5 leading-7 text-[#52645f]">{internship.description}</p>
+            <div className="mt-6 grid gap-5 sm:grid-cols-2">
+              <div>
+                <h4 className="text-sm font-black uppercase tracking-[0.14em] text-[#4f756c]">Learnings</h4>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {internship.learnings.map((item) => (
+                    <span key={item} className="tag">
+                      {item}
+                    </span>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <h4 className="text-sm font-black uppercase tracking-[0.14em] text-[#4f756c]">Tools / Stack</h4>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {internship.tools.map((item) => (
+                    <span key={item} className="skill-chip">
+                      {item}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </article>
+        ))}
       </div>
-    </motion.div>
+    </Section>
   );
 }
 
-export default function App() {
-  const { auth, save, logout } = useAuth();
+function Skills() {
   return (
-    <>
-      <Toaster position="bottom-right" theme="dark" toastOptions={{ style: { background: '#0a0d1a', border: '1px solid rgba(255,255,255,0.1)' } }} />
-      {auth ? <Shell user={auth.user} onLogout={logout} onUpdateUser={(u) => save({ token: auth.token, user: u })} /> : <LandingPage onAuth={save} />}
-    </>
+    <Section id="skills" eyebrow="Skills" title="Tooling across analytics, machine learning, and AI web apps">
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        {skillGroups.map((group) => (
+          <article key={group.title} className="content-panel p-6">
+            <div className="flex items-center gap-3">
+              <span className="icon-box">
+                <group.icon size={21} />
+              </span>
+              <h3 className="text-xl font-black text-[#17221f]">{group.title}</h3>
+            </div>
+            <div className="mt-5 flex flex-wrap gap-2">
+              {group.skills.map((skill) => (
+                <span key={skill} className="skill-chip">
+                  {skill}
+                </span>
+              ))}
+            </div>
+          </article>
+        ))}
+      </div>
+    </Section>
   );
 }
+
+function Projects() {
+  return (
+    <Section id="projects" eyebrow="Projects" title="Featured evidence from GitHub">
+      <div className="grid gap-5 lg:grid-cols-2">
+        {featuredProjects.map((project) => (
+          <ProjectCard key={project.name} project={project} featured />
+        ))}
+      </div>
+      <div className="mt-14">
+        <div className="mb-5 flex items-end justify-between gap-4">
+          <div>
+            <p className="section-kicker">
+              <Github size={18} />
+              More GitHub Work
+            </p>
+            <h3 className="mt-2 text-2xl font-black text-[#17221f]">Additional public repositories</h3>
+          </div>
+          <a href={profile.github} target="_blank" rel="noreferrer" className="text-link">
+            View profile <ExternalLink size={15} />
+          </a>
+        </div>
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          {moreProjects.map((project) => (
+            <ProjectCard key={project.name} project={project} />
+          ))}
+        </div>
+      </div>
+    </Section>
+  );
+}
+
+function ProjectCard({ project, featured = false }) {
+  return (
+    <article className={`project-card ${featured ? "p-6 sm:p-7" : "p-5"}`}>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          {featured && <span className="project-label">{project.highlight}</span>}
+          {!featured && <span className="text-xs font-black uppercase tracking-[0.14em] text-[#6b7c77]">{project.language}</span>}
+          <h3 className="mt-3 text-xl font-black text-[#17221f]">{project.name}</h3>
+          <p className="mt-1 text-sm font-bold text-[#31544f]">{project.type}</p>
+        </div>
+        <Github size={22} className="shrink-0 text-[#4f756c]" />
+      </div>
+      <p className="mt-4 leading-7 text-[#52645f]">{project.description}</p>
+      {featured && (
+        <div className="mt-5 flex flex-wrap gap-2">
+          {project.stack.map((item) => (
+            <span key={item} className="skill-chip">
+              {item}
+            </span>
+          ))}
+        </div>
+      )}
+      <div className="mt-6 flex flex-wrap gap-3">
+        <a href={project.repo} target="_blank" rel="noreferrer" className="text-link">
+          Repository <ExternalLink size={15} />
+        </a>
+        {project.live && (
+          <a href={project.live} target="_blank" rel="noreferrer" className="text-link">
+            Live <ExternalLink size={15} />
+          </a>
+        )}
+      </div>
+    </article>
+  );
+}
+
+function Experience() {
+  return (
+    <Section id="certificates" eyebrow="Certificates" title="Certifications, simulations, and skills gained">
+      <div className="grid gap-5 lg:grid-cols-[1fr_0.9fr]">
+        <div className="space-y-5">
+          {experiences.map((item) => (
+            <article key={item.title} className="content-panel p-6 sm:p-8">
+              <div className="flex flex-wrap items-start justify-between gap-4">
+                <div>
+                  <p className="text-sm font-bold uppercase tracking-[0.16em] text-[#4f756c]">{item.period}</p>
+                  <h3 className="mt-2 text-xl font-black text-[#17221f]">{item.title}</h3>
+                  <p className="mt-1 text-sm font-bold text-[#31544f]">{item.organization}</p>
+                </div>
+                <Award className="text-[#c68f31]" />
+              </div>
+              <ul className="mt-5 space-y-3">
+                {item.points.map((point) => (
+                  <li key={point} className="flex gap-3 text-sm leading-6 text-[#52645f]">
+                    <ChevronRight size={17} className="mt-1 shrink-0 text-[#2f7d68]" />
+                    <span>{point}</span>
+                  </li>
+                ))}
+              </ul>
+            </article>
+          ))}
+        </div>
+        <div className="content-panel p-6 sm:p-8">
+          <div className="section-kicker">
+            <BookOpenCheck size={18} />
+            Certifications
+          </div>
+          <div className="mt-5 grid gap-3">
+            {certifications.map((item) => (
+              <a key={item.name} href={item.link} target="_blank" rel="noreferrer" className="cert-row">
+                <CheckCircle2 size={18} />
+                <span>
+                  <strong>{item.name}</strong>
+                  <small>{item.issuer} • {item.period}</small>
+                  <em>{item.skills.join(" • ")}</em>
+                </span>
+                <ExternalLink size={16} className="cert-link-icon" />
+              </a>
+            ))}
+          </div>
+        </div>
+      </div>
+    </Section>
+  );
+}
+
+function Contact() {
+  return (
+    <section id="contact" className="px-4 py-16 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-7xl overflow-hidden rounded-lg border border-[#17221f]/10 bg-[#17221f] text-white">
+        <div className="grid gap-8 p-7 sm:p-10 lg:grid-cols-[1fr_auto] lg:items-center">
+          <div>
+            <p className="section-kicker text-[#a9d8c4]">
+              <TrendingUp size={18} />
+              Available for Opportunities
+            </p>
+            <h2 className="mt-3 text-3xl font-black sm:text-4xl">Let’s talk about data, AI, analytics, or internship roles.</h2>
+            <p className="mt-4 max-w-3xl leading-7 text-white/72">
+              Best fit: Data Science Intern, Data Analyst Intern, Python/AI Intern, or MERN frontend roles where analytics and product thinking meet.
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-3 lg:justify-end">
+            <a className="contact-button" href={`mailto:${profile.email}`}>
+              <Mail size={19} />
+              Email
+            </a>
+            <a className="contact-button" href={profile.github} target="_blank" rel="noreferrer">
+              <Github size={19} />
+              GitHub
+            </a>
+            <a className="contact-button" href={profile.linkedin} target="_blank" rel="noreferrer">
+              <Linkedin size={19} />
+              LinkedIn
+            </a>
+            <a className="contact-button" href={profile.resume} target="_blank" rel="noreferrer">
+              <FileText size={19} />
+              Resume
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function Section({ id, eyebrow, title, children }) {
+  return (
+    <section id={id} className="px-4 py-14 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-7xl">
+        <div className="mb-7 max-w-3xl">
+          <p className="section-kicker">
+            <CalendarDays size={18} />
+            {eyebrow}
+          </p>
+          <h2 className="mt-3 text-3xl font-black leading-tight text-[#17221f] sm:text-4xl">{title}</h2>
+        </div>
+        {children}
+      </div>
+    </section>
+  );
+}
+
+export default App;
