@@ -31,7 +31,7 @@ const profile = {
   email: "prasadshetty1275@gmail.com",
   github: "https://github.com/shettyprasad-git",
   linkedin: "https://www.linkedin.com/in/durgaprasadshetty/",
-  resume: "https://drive.google.com/file/d/1Et00-eYuTWZlKj0F5V26l944Q5hvMQo9/view?usp=drivesdk",
+  resume: "https://drive.google.com/file/d/1QyW-NaA0tixH7v90j55JxLr5JRAu2HIM/view?usp=sharing",
   avatar: "/profile-avatar.jpg",
   summary:
     "Computer Science and Data Science Engineering student building practical machine learning, analytics, and AI-assisted web projects with Python, SQL, Power BI, Tableau, React, and Node.js.",
@@ -128,7 +128,7 @@ const featuredProjects = [
       "Built a full-stack productivity platform with smart tasks, notes, email generation, workflow planning, JWT auth, MongoDB, and Hugging Face AI integration.",
     stack: ["React", "Node.js", "MongoDB", "JWT", "Hugging Face"],
     repo: "https://github.com/shettyprasad-git/FlowPilot-AI",
-    live: "https://flow-pilot-ai-pink.vercel.app",
+    live: "https://flow-pilot-ai-app.vercel.app/",
     highlight: "Full-stack AI"
   },
   {
@@ -138,7 +138,7 @@ const featuredProjects = [
       "Created a ChatGPT-style AI chatbot with React, Vite, serverless backend behavior, customizable AI responses, and a polished glass UI.",
     stack: ["React", "Vite", "Hugging Face", "Serverless"],
     repo: "https://github.com/shettyprasad-git/AI-Hub",
-    live: "https://ai-hub-fawn.vercel.app",
+    live: "https://ai-hub-fawn.vercel.app/",
     highlight: "AI interface"
   },
   {
@@ -167,6 +167,7 @@ const featuredProjects = [
       "Performed EDA, cleaning, feature engineering, model serialization, and deployment for a housing price predictor based on location and property features.",
     stack: ["Python", "Scikit-learn", "Streamlit", "NumPy"],
     repo: "https://github.com/shettyprasad-git/Bangalore-House-Price-Prediction",
+    live: "https://bangalorehousepriceprediction-prasadshetty.streamlit.app/",
     highlight: "ML deployment"
   },
   {
@@ -203,21 +204,21 @@ const moreProjects = [
     name: "kodbank",
     description: "Banking web app with React, Node.js, MySQL, JWT auth, dashboard UI, and AI customer support chatbot.",
     repo: "https://github.com/shettyprasad-git/kodbank",
-    live: "https://kodbank-backend.vercel.app",
+    live: "https://kodbank-sigma.vercel.app/",
     language: "JavaScript"
   },
   {
     name: "Entertainment-kit",
     description: "Entertainment platform clone with TMDB integration, auth, React, Tailwind, Node.js, and cloud watchlist features.",
     repo: "https://github.com/shettyprasad-git/Entertainment-kit",
-    live: "https://entertainment-kit-backend.vercel.app",
+    live: "https://entertainment-kit.vercel.app",
     language: "JavaScript"
   },
   {
     name: "Wedding Expense Tracker",
     description: "Responsive JavaScript expense tracker deployed on Vercel for structured event budget management.",
     repo: "https://github.com/shettyprasad-git/Wedding-Expense-Tracker",
-    live: "https://wedding-expense-tracker-indol.vercel.app",
+    live: "https://weddingexpense.vercel.app",
     language: "JavaScript"
   },
   {
@@ -231,19 +232,21 @@ const moreProjects = [
     name: "Weather App",
     description: "React weather dashboard using Weatherstack API for current and historical weather data with filters.",
     repo: "https://github.com/shettyprasad-git/weather-app",
-    live: "https://weather-app-two-omega-75.vercel.app",
+    live: "https://weatherbyprasad.vercel.app/",
     language: "JavaScript"
   },
   {
     name: "Sales Prediction Using Python",
     description: "Regression project forecasting sales from advertising data with EDA, visualization, and Streamlit delivery.",
     repo: "https://github.com/shettyprasad-git/Sales-Prediction-Using-Python",
+    live: "https://salespredictionusingpython.streamlit.app/",
     language: "Jupyter Notebook"
   },
   {
     name: "Titanic Survival Prediction",
     description: "Classification project with preprocessing, feature engineering, missing-value handling, and model validation.",
     repo: "https://github.com/shettyprasad-git/Titanic-Survival-Prediction",
+    live: "https://titanicsurvivalprediction-prasadshetty.streamlit.app/",
     language: "Jupyter Notebook"
   },
   {
