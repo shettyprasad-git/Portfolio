@@ -1,7 +1,5 @@
 node_modules/
 dist/
 .env
-client/.env
-server/.env
 npm-debug.log*
 .codex-logs/
