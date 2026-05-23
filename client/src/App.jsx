@@ -1,3 +1,4 @@
+import React, { useState } from "react";
 import {
   Award,
   BarChart3,
@@ -18,7 +19,9 @@ import {
   MapPin,
   Sparkles,
   Star,
-  TrendingUp
+  TrendingUp,
+  Menu,
+  X
 } from "lucide-react";
 
 const profile = {
@@ -44,6 +47,12 @@ const profile = {
       program: "PUC, Science (PCMC), Karnataka State Board",
       result: "89.5%",
       period: "Completed 2023"
+    },
+    {
+      school: "VANI English Medium School, Mangalore",
+      program: "Xth, Karnataka State Board",
+      result: "90.24%",
+      period: "Completed 2021"
     }
   ]
 };
@@ -59,7 +68,7 @@ const internships = [
   {
     company: "KodNest Technologies",
     role: "Data Science Internship, Free Intern Learning Track",
-    internId: "KN/INT/FREE/2026/31514",
+    internId: "KOD8HIW3D",
     timeline: "Jan 2026 - Present",
     description:
       "Flexible learning-track internship focused on structured industry exposure, guided modules, and practical preparation across AI-assisted development and data workflows.",
@@ -82,17 +91,17 @@ const skillGroups = [
   {
     title: "Programming",
     icon: Code2,
-    skills: ["Python", "SQL", "R", "Scala", "JavaScript", "TypeScript"]
+    skills: ["Python", "SQL", "R", "C", "C++", "HTML", "CSS", "JavaScript"]
   },
   {
     title: "Data Science & ML",
     icon: BrainCircuit,
-    skills: ["Pandas", "NumPy", "Scikit-learn", "Regression", "Classification", "EDA", "Feature Engineering"]
+    skills: ["Pandas", "NumPy", "Scikit-learn", "Matplotlib", "Seaborn", "Regression", "Classification", "EDA", "Feature Engineering", "Model Evaluation"]
   },
   {
     title: "BI & Analytics",
     icon: BarChart3,
-    skills: ["Power BI", "Tableau", "Microsoft Excel", "Dashboards", "KPI Analysis", "Data Cleaning"]
+    skills: ["Power BI", "Tableau", "Microsoft Excel", "Dashboards", "KPI Analysis", "Data Cleaning", "Data Preprocessing"]
   },
   {
     title: "Databases",
@@ -100,14 +109,14 @@ const skillGroups = [
     skills: ["MySQL", "PostgreSQL", "MongoDB", "SQL Analysis", "Data Modeling"]
   },
   {
-    title: "Web & MERN",
+    title: "Web & MERN Stack",
     icon: Sparkles,
-    skills: ["React", "Node.js", "Express", "Vite", "Tailwind CSS", "JWT Auth", "REST APIs"]
+    skills: ["HTML", "CSS", "JavaScript", "React", "Node.js", "Express.js", "MongoDB", "Vite", "Tailwind CSS", "JWT Authentication", "REST APIs"]
   },
   {
     title: "AI Tools",
     icon: Star,
-    skills: ["Hugging Face", "AI Chatbots", "Agentic Development", "Prompted Workflows", "Streamlit"]
+    skills: ["Hugging Face", "AI Chatbots", "Agentic Development", "Prompted Workflows", "Streamlit", "IBM Watson Studio", "Streamlit Cloud"]
   }
 ];
 
@@ -319,11 +328,18 @@ const certifications = [
     skills: ["Machine learning basics", "Data preparation", "Model interpretation"]
   },
   {
-    name: "Data Science and Machine Learning",
+    name: "Python for Data Science",
     issuer: "Udemy",
-    period: "2025",
+    period: "Sep 2025",
     link: "https://www.udemy.com/certificate/UC-ec6274c0-0b6e-4c46-a099-4440ee98ad8e/",
-    skills: ["Python ML", "Model building", "Practical data projects"]
+    skills: ["Python programming", "Data analysis basics", "Practical notebook workflows"]
+  },
+  {
+    name: "Data Analyst Bootcamp",
+    issuer: "Alex The Analyst",
+    period: "Aug 2025",
+    link: "https://www.youtube.com/@AlexTheAnalyst",
+    skills: ["Excel analytics", "SQL foundations", "Portfolio project workflow"]
   }
 ];
 
@@ -338,42 +354,80 @@ const navItems = [
 
 function App() {
   return (
-    <main className="min-h-screen bg-[#f7f8f4] text-[#17221f]">
+    <div className="min-h-screen bg-[#f7f8f4] text-[#17221f]">
       <HeaderNav />
-      <Hero />
-      <About />
-      <Internships />
-      <Skills />
-      <Projects />
-      <Experience />
-      <Contact />
-    </main>
+      <main>
+        <Hero />
+        <About />
+        <Internships />
+        <Skills />
+        <Projects />
+        <Experience />
+        <Contact />
+      </main>
+    </div>
   );
 }
 
 function HeaderNav() {
+  const [isOpen, setIsOpen] = useState(false);
+
   return (
-    <header className="sticky top-0 z-50 border-b border-[#17221f]/10 bg-[#f7f8f4]/90 backdrop-blur-xl">
-      <nav className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:flex-nowrap lg:px-8">
-        <a href="#top" className="flex min-w-0 items-center gap-3">
-          <span className="grid h-10 w-10 place-items-center rounded-lg bg-[#17221f] text-sm font-black text-white">
-            DP
-          </span>
-          <span className="hidden text-sm font-bold uppercase tracking-[0.16em] text-[#17221f] sm:block">
-            Durga Prasad
-          </span>
-        </a>
-        <div className="nav-menu order-3 flex w-full items-center gap-1 overflow-x-auto lg:order-none lg:w-auto">
-          {navItems.map((item) => (
-            <a key={item.label} href={item.href} className="nav-link">
-              {item.label}
+    <header className="sticky top-0 z-50 border-b border-[#17221f]/10 bg-[#f7f8f4]/90 backdrop-blur-xl transition-all duration-300">
+      <nav className="mx-auto max-w-7xl px-3 py-2.5 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between gap-3">
+          {/* Mobile hamburger menu & logo */}
+          <div className="flex items-center gap-2 sm:gap-3">
+            <button
+              onClick={() => setIsOpen(!isOpen)}
+              className="flex h-9 w-9 items-center justify-center rounded-lg border border-[#17221f]/10 bg-white/50 text-[#17221f] transition-all hover:bg-white lg:hidden"
+              aria-label="Toggle Menu"
+            >
+              {isOpen ? <X size={18} /> : <Menu size={18} />}
+            </button>
+            <a href="#top" className="flex items-center gap-2 sm:gap-3">
+              <span className="grid h-9 w-9 place-items-center rounded-lg bg-[#17221f] text-xs font-black text-white sm:h-10 sm:w-10 sm:text-sm">
+                DP
+              </span>
+              <span className="text-xs font-black uppercase tracking-wider text-[#17221f] sm:text-sm sm:font-bold sm:tracking-[0.16em]">
+                Durga Prasad
+              </span>
             </a>
-          ))}
+          </div>
+
+          {/* Desktop navigation menu */}
+          <div className="hidden items-center gap-1 lg:flex">
+            {navItems.map((item) => (
+              <a key={item.label} href={item.href} className="nav-link">
+                {item.label}
+              </a>
+            ))}
+          </div>
+
+          {/* Resume button */}
+          <div>
+            <a href={profile.resume} target="_blank" rel="noreferrer" className="small-button text-xs py-1.5 px-2.5 sm:text-sm sm:py-2 sm:px-3">
+              <FileText size={15} className="sm:w-4 sm:h-4" />
+              <span>Resume</span>
+            </a>
+          </div>
         </div>
-        <a href={profile.resume} target="_blank" rel="noreferrer" className="small-button">
-          <FileText size={16} />
-          Resume
-        </a>
+
+        {/* Mobile menu dropdown */}
+        {isOpen && (
+          <div className="mt-3 grid grid-cols-2 gap-2 border-t border-[#17221f]/10 pt-3 lg:hidden">
+            {navItems.map((item) => (
+              <a
+                key={item.label}
+                href={item.href}
+                onClick={() => setIsOpen(false)}
+                className="flex items-center justify-center rounded-lg bg-white/50 border border-[#17221f]/5 px-3 py-2.5 text-center text-xs font-black uppercase tracking-wider text-[#465752] transition-colors hover:bg-[#17221f]/5 hover:text-[#17221f] active:bg-[#17221f]/10"
+              >
+                {item.label}
+              </a>
+            ))}
+          </div>
+        )}
       </nav>
     </header>
   );
@@ -382,8 +436,23 @@ function HeaderNav() {
 function Hero() {
   return (
     <section id="top" className="portfolio-hero">
-      <div className="mx-auto grid min-h-[calc(84vh-68px)] max-w-7xl items-center gap-10 px-4 py-10 sm:px-6 lg:grid-cols-[1.08fr_0.92fr] lg:px-8 lg:py-12">
-        <div>
+      <div className="hero-window mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8 lg:py-12">
+        <div className="hero-window-bar">
+          <button className="hero-menu-button" aria-label="Open portfolio menu">
+            <span />
+            <span />
+            <span />
+          </button>
+          <div className="hero-window-title">
+            <span className="control-dot bg-[#ff5f57]" />
+            <span className="control-dot bg-[#febc2e]" />
+            <span className="control-dot bg-[#28c840]" />
+            <strong>Portfolio Preview</strong>
+          </div>
+          <span className="hero-window-mode">DATA / AI</span>
+        </div>
+        <div className="hero-window-body grid min-h-[calc(84vh-68px)] items-center gap-10 lg:grid-cols-[1.08fr_0.92fr]">
+          <div className="hero-copy">
           <div className="eyebrow">
             <Sparkles size={16} />
             Data Science, Analytics, AI and MERN Projects
@@ -422,7 +491,7 @@ function Hero() {
           </div>
         </div>
 
-        <div className="profile-panel">
+        <div className="profile-panel hero-profile-panel">
           <div className="flex items-start gap-5">
             <img src={profile.avatar} alt="Durga Prasad GitHub avatar" className="h-24 w-24 rounded-lg object-cover ring-4 ring-white" />
             <div>
@@ -454,6 +523,7 @@ function Hero() {
           </div>
         </div>
       </div>
+      </div>
     </section>
   );
 }
@@ -461,37 +531,64 @@ function Hero() {
 function About() {
   return (
     <Section id="about" eyebrow="About" title="A practical data profile with full-stack range">
-      <div className="grid gap-5 lg:grid-cols-[1.1fr_0.9fr]">
+      <div className="flex flex-col gap-8">
+        {/* Profile Card */}
         <div className="content-panel p-6 sm:p-8">
-          <p className="text-lg leading-8 text-[#465752]">
-            Durga Prasad is a Computer Science and Data Science Engineering student at CMR University with a strong foundation in Python, SQL, machine learning, and business analytics. His work combines end-to-end ML pipelines, dashboard storytelling, and deployed AI/MERN applications.
-          </p>
-          <div className="mt-7 grid gap-4 sm:grid-cols-3">
-            {[
-              ["ML Pipelines", "EDA, preprocessing, feature engineering, model evaluation"],
-              ["Dashboards", "Power BI, Tableau, Excel, KPI analysis"],
-              ["AI Apps", "React, Node.js, MongoDB, Hugging Face, JWT"]
-            ].map(([title, text]) => (
-              <div key={title} className="mini-card">
-                <CheckCircle2 size={19} className="text-[#2f7d68]" />
-                <h3 className="mt-3 font-black text-[#17221f]">{title}</h3>
-                <p className="mt-2 text-sm leading-6 text-[#52645f]">{text}</p>
+          <div className="grid gap-6 lg:grid-cols-[1fr_2fr] items-start">
+            <div>
+              <h3 className="text-2xl font-black text-[#17221f]">Durga Prasad</h3>
+              <p className="mt-2 text-sm font-bold uppercase tracking-wider text-[#4f756c]">
+                CSE & Data Science Student
+              </p>
+              <p className="mt-4 text-[#52645f] leading-relaxed text-sm">
+                Passionate about building data-driven products, machine learning pipelines, and responsive web applications.
+              </p>
+            </div>
+            <div className="border-t border-[#17221f]/10 pt-6 lg:border-t-0 lg:border-l lg:pt-0 lg:pl-8">
+              <p className="text-lg leading-8 text-[#465752]">
+                Computer Science and Data Science Engineering student with a strong foundation in Python, SQL, machine learning, and business analytics. His work combines end-to-end ML pipelines, dashboard storytelling, and deployed AI/MERN applications.
+              </p>
+              <div className="mt-6 grid gap-4 sm:grid-cols-3">
+                {[
+                  ["ML Pipelines", "EDA, preprocessing, feature engineering, model evaluation"],
+                  ["Dashboards", "Power BI, Tableau, Excel, KPI analysis"],
+                  ["AI Apps", "React, Node.js, MongoDB, Hugging Face, JWT"]
+                ].map(([title, text]) => (
+                  <div key={title} className="mini-card flex flex-col justify-between h-full">
+                    <div>
+                      <CheckCircle2 size={19} className="text-[#2f7d68]" />
+                      <h3 className="mt-2.5 font-black text-[#17221f] text-sm">{title}</h3>
+                      <p className="mt-1.5 text-xs leading-5 text-[#52645f]">{text}</p>
+                    </div>
+                  </div>
+                ))}
               </div>
-            ))}
+            </div>
           </div>
         </div>
-        <div className="content-panel p-6 sm:p-8">
-          <div className="section-kicker">
-            <GraduationCap size={18} />
-            Education
+
+        {/* Education Timeline Row */}
+        <div>
+          <div className="mb-5 flex items-center gap-3">
+            <span className="section-kicker">
+              <GraduationCap size={18} />
+              Educational Background
+            </span>
           </div>
-          <div className="mt-5 space-y-4">
-            {profile.education.map((item) => (
-              <div key={item.school} className="timeline-card">
-                <p className="text-sm font-bold text-[#4f756c]">{item.period}</p>
-                <h3 className="mt-1 text-lg font-black text-[#17221f]">{item.school}</h3>
-                <p className="mt-1 text-sm leading-6 text-[#52645f]">{item.program}</p>
-                <p className="mt-2 inline-flex rounded-md bg-[#dcefe4] px-2 py-1 text-xs font-black text-[#245246]">{item.result}</p>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {profile.education.slice().reverse().map((item) => (
+              <div key={item.school} className="timeline-card flex flex-col justify-between p-6 h-full">
+                <div>
+                  <span className="inline-flex rounded-full bg-[#dcefe4] px-2.5 py-0.5 text-xs font-black text-[#245246] uppercase tracking-wider">
+                    {item.period}
+                  </span>
+                  <h3 className="mt-4 text-lg font-black text-[#17221f] leading-snug">{item.school}</h3>
+                  <p className="mt-2 text-sm leading-relaxed text-[#52645f]">{item.program}</p>
+                </div>
+                <div className="mt-5 border-t border-[#17221f]/5 pt-3 flex items-center justify-between">
+                  <span className="text-xs font-bold text-[#4f756c] uppercase">Result</span>
+                  <span className="text-sm font-black text-[#245246]">{item.result}</span>
+                </div>
               </div>
             ))}
           </div>
@@ -643,47 +740,80 @@ function ProjectCard({ project, featured = false }) {
 function Experience() {
   return (
     <Section id="certificates" eyebrow="Certificates" title="Certifications, simulations, and skills gained">
-      <div className="grid gap-5 lg:grid-cols-[1fr_0.9fr]">
-        <div className="space-y-5">
+      {/* Industry Job Simulations */}
+      <div className="mb-12">
+        <div className="mb-6">
+          <div className="section-kicker">
+            <BriefcaseBusiness size={18} />
+            Industry Job Simulations
+          </div>
+        </div>
+        <div className="grid gap-5 md:grid-cols-2">
           {experiences.map((item) => (
-            <article key={item.title} className="content-panel p-6 sm:p-8">
-              <div className="flex flex-wrap items-start justify-between gap-4">
-                <div>
-                  <p className="text-sm font-bold uppercase tracking-[0.16em] text-[#4f756c]">{item.period}</p>
-                  <h3 className="mt-2 text-xl font-black text-[#17221f]">{item.title}</h3>
-                  <p className="mt-1 text-sm font-bold text-[#31544f]">{item.organization}</p>
+            <article key={item.title} className="content-panel p-6 sm:p-8 flex flex-col justify-between">
+              <div>
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <p className="text-sm font-bold uppercase tracking-[0.16em] text-[#4f756c]">{item.period}</p>
+                    <h3 className="mt-2 text-xl font-black text-[#17221f]">{item.title}</h3>
+                    <p className="mt-1 text-sm font-bold text-[#31544f]">{item.organization}</p>
+                  </div>
+                  <Award className="text-[#c68f31] shrink-0" size={24} />
                 </div>
-                <Award className="text-[#c68f31]" />
+                <ul className="mt-5 space-y-3">
+                  {item.points.map((point) => (
+                    <li key={point} className="flex gap-3 text-sm leading-6 text-[#52645f]">
+                      <ChevronRight size={17} className="mt-1 shrink-0 text-[#2f7d68]" />
+                      <span>{point}</span>
+                    </li>
+                  ))}
+                </ul>
               </div>
-              <ul className="mt-5 space-y-3">
-                {item.points.map((point) => (
-                  <li key={point} className="flex gap-3 text-sm leading-6 text-[#52645f]">
-                    <ChevronRight size={17} className="mt-1 shrink-0 text-[#2f7d68]" />
-                    <span>{point}</span>
-                  </li>
-                ))}
-              </ul>
             </article>
           ))}
         </div>
-        <div className="content-panel p-6 sm:p-8">
+      </div>
+
+      {/* Verified Certifications */}
+      <div>
+        <div className="mb-6">
           <div className="section-kicker">
             <BookOpenCheck size={18} />
-            Certifications
+            Verified Certifications
           </div>
-          <div className="mt-5 grid gap-3">
-            {certifications.map((item) => (
-              <a key={item.name} href={item.link} target="_blank" rel="noreferrer" className="cert-row">
-                <CheckCircle2 size={18} />
-                <span>
-                  <strong>{item.name}</strong>
-                  <small>{item.issuer} • {item.period}</small>
-                  <em>{item.skills.join(" • ")}</em>
-                </span>
-                <ExternalLink size={16} className="cert-link-icon" />
-              </a>
-            ))}
-          </div>
+        </div>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {certifications.map((item) => (
+            <a
+              key={item.name}
+              href={item.link}
+              target="_blank"
+              rel="noreferrer"
+              className="cert-row flex flex-col justify-between h-full group"
+            >
+              <div>
+                <div className="flex items-start justify-between gap-3">
+                  <CheckCircle2 size={18} className="shrink-0 text-[#2f7d68]" />
+                  <ExternalLink size={16} className="cert-link-icon shrink-0 text-[#4f756c] opacity-60 transition-opacity group-hover:opacity-100" />
+                </div>
+                <div className="mt-3">
+                  <strong className="text-[#17221f] font-black text-base leading-snug">{item.name}</strong>
+                  <small className="mt-1.5 block text-xs font-bold text-[#4f756c] uppercase tracking-wider">
+                    {item.issuer} • {item.period}
+                  </small>
+                </div>
+              </div>
+              <div className="mt-4 border-t border-[#17221f]/5 pt-3">
+                <div className="flex flex-wrap gap-1">
+                  {item.skills.map((skill) => (
+                    <span key={skill} className="inline-flex items-center rounded-md bg-[#dcefe4]/50 px-2 py-0.5 text-[10px] font-bold text-[#245246]">
+                      {skill}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </a>
+          ))}
         </div>
       </div>
     </Section>
